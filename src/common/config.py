@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 import os
 
-load_dotenv()
+load_dotenv(override=True)
 
 KEYCLOAK_CFG = {
     "server_url": os.getenv("SERVER_URL"),
