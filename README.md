@@ -318,3 +318,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## Support
 
 For issues, questions, or contributions, please visit the [GitHub repository](https://github.com/idoyudha/mcp-keycloak).
+
+## Reference
+- [Keycloak REST API Documentation](https://www.keycloak.org/docs-api/latest/rest-api/index.html)
+- [Keycloak Documentation](https://www.keycloak.org/documentation)
