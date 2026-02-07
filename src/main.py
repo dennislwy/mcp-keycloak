@@ -21,6 +21,8 @@ from .tools import client_tools  # noqa: F401
 from .tools import realm_tools  # noqa: F401
 from .tools import role_tools  # noqa: F401
 from .tools import group_tools  # noqa: F401
+from .tools import client_scope_tools  # noqa: F401
+from .tools import protocol_mapper_tools  # noqa: F401
 
 # Configure logging
 logging.basicConfig(

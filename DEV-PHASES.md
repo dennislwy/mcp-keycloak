@@ -72,19 +72,27 @@ The following Keycloak REST API endpoints have been implemented in this MCP serv
 - [ ] Import/export identity provider configurations
 - [ ] Test identity provider connections
 
-#### 1.2 Client Scopes
-- [ ] List/get client scopes
-- [ ] Create/update/delete client scopes
-- [ ] Assign client scopes to clients
-- [ ] Manage protocol mappers for scopes
-- [ ] Set default client scopes
+#### 1.2 Client Scopes ✅ **COMPLETED** (Feb 7, 2026)
+- [x] List/get client scopes
+- [x] Create/update/delete client scopes
+- [x] Assign client scopes to clients (default & optional)
+- [x] Manage protocol mappers for scopes
+- [x] Set default/optional client scopes at realm level
+- [x] Get/set client-specific scope assignments
 
-#### 1.3 Protocol Mappers
-- [ ] List protocol mappers
-- [ ] Create custom mappers (attribute, role, audience)
-- [ ] Update/delete mappers
-- [ ] Configure mapper for clients and scopes
-- [ ] Built-in mapper templates
+**Implementation:** `src/tools/client_scope_tools.py` (17 tools)
+
+#### 1.3 Protocol Mappers ✅ **COMPLETED** (Feb 7, 2026)
+- [x] List protocol mappers (for scopes and clients)
+- [x] Create custom mappers (attribute, role, audience)
+- [x] Update/delete mappers
+- [x] Configure mappers for clients and scopes
+- [x] Built-in mapper templates (user attribute, role, audience)
+- [x] Batch mapper creation
+- [x] Filter by protocol
+- [x] Evaluate effective mappers for token generation
+
+**Implementation:** `src/tools/protocol_mapper_tools.py` (18 tools)
 
 #### 1.4 User Federation
 - [ ] Configure LDAP providers
@@ -258,9 +266,9 @@ The following Keycloak REST API endpoints have been implemented in this MCP serv
 | Groups | 95% | ✅ Nearly Complete |
 | Realms | 40% | ⚠️ Basic Coverage |
 | Authentication | 70% | ✅ Good Coverage |
+| **Client Scopes** | **100%** | ✅ **Complete** (Phase 1.2) |
+| **Protocol Mappers** | **100%** | ✅ **Complete** (Phase 1.3) |
 | Identity Providers | 0% | ❌ Not Implemented |
-| Client Scopes | 0% | ❌ Not Implemented |
-| Protocol Mappers | 0% | ❌ Not Implemented |
 | Federation | 0% | ❌ Not Implemented |
 | Events | 20% | ⚠️ Minimal Coverage |
 | Sessions | 20% | ⚠️ Minimal Coverage |
@@ -268,6 +276,6 @@ The following Keycloak REST API endpoints have been implemented in this MCP serv
 | Authorization | 0% | ❌ Not Implemented |
 | Organizations | 0% | ❌ Not Implemented |
 
-**Overall API Coverage: ~35-40%**
+**Overall API Coverage: ~45-50%** (Updated Feb 7, 2026)
 
 The current implementation covers essential user, client, role, and group management with good authentication flow support. Major gaps exist in identity federation, security monitoring, and advanced enterprise features.

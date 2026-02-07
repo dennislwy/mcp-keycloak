@@ -18,6 +18,9 @@ Manage users lifecycle from creation to deletion, including password resets, ses
 ### 🏢 Client Configuration
 Create and configure OAuth2/OIDC clients, manage client secrets, and handle service accounts programmatically.
 
+### 🎯 Client Scopes & Protocol Mappers
+Define reusable client scopes, create custom protocol mappers for token claims, and control what information is included in access tokens and ID tokens.
+
 ### 👥 Role-Based Access Control
 Define and assign realm and client-specific roles, manage user permissions, and implement fine-grained access control.
 
@@ -90,6 +93,24 @@ OAuth2/OIDC client configuration:
 - `get_client_secret` / `regenerate_client_secret` - Secret management
 - `get_client_service_account` - Service account access
 - `update_client` / `delete_client` - Client modifications
+
+### Client Scopes
+Reusable scope configuration and token customization:
+- `list_client_scopes` / `get_client_scope` / `create_client_scope` - Scope CRUD
+- `update_client_scope` / `delete_client_scope` - Scope modifications
+- `get_realm_default_client_scopes` / `add_realm_default_client_scope` - Realm defaults
+- `get_realm_optional_client_scopes` / `add_realm_optional_client_scope` - Realm optional
+- `get_client_default_scopes` / `add_client_default_scope` - Client default scopes
+- `get_client_optional_scopes` / `add_client_optional_scope` - Client optional scopes
+
+### Protocol Mappers
+Token claim customization for clients and scopes:
+- `list_client_scope_protocol_mappers` / `create_client_scope_protocol_mapper` - Scope mappers
+- `list_client_protocol_mappers` / `create_client_protocol_mapper` - Client mappers
+- `update_client_scope_protocol_mapper` / `delete_client_scope_protocol_mapper` - Mapper CRUD
+- `add_client_scope_protocol_mappers` / `add_client_protocol_mappers` - Batch operations
+- `evaluate_client_scope_mappers` - Effective mapper evaluation
+- `create_user_attribute_mapper` / `create_role_mapper` / `create_audience_mapper` - Quick templates
 
 ### Role Management
 Fine-grained permission control:
