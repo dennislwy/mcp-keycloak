@@ -21,6 +21,12 @@ Create and configure OAuth2/OIDC clients, manage client secrets, and handle serv
 ### 🎯 Client Scopes & Protocol Mappers
 Define reusable client scopes, create custom protocol mappers for token claims, and control what information is included in access tokens and ID tokens.
 
+### 🌐 Identity Providers
+Configure external identity providers (Google, Facebook, OIDC, SAML), manage attribute mappers, and handle federated user identities for seamless SSO integration.
+
+### 📁 User Federation
+Connect external user stores (LDAP, Kerberos), configure user storage providers, and manage attribute mappings for centralized user management.
+
 ### 👥 Role-Based Access Control
 Define and assign realm and client-specific roles, manage user permissions, and implement fine-grained access control.
 
@@ -29,6 +35,12 @@ Configure realm settings, manage default groups, handle event configurations, an
 
 ### 🔐 Authentication Management
 Comprehensive authentication flow management including creating, updating, and deleting flows, managing executions, and configuring authenticators.
+
+### 📊 Events Management
+Track and audit user activities and administrative changes with comprehensive event logging. Query user events (login, logout, registration), admin events (configuration changes), and manage event retention policies.
+
+### 🔐 Sessions Management
+Comprehensive session control and monitoring across all clients and users. Monitor active sessions, configure session timeouts, track user activity by IP address, and perform emergency logout operations for security incidents.
 
 ### 🔄 Group Management
 Organize users into groups, manage group hierarchies, and handle group-based permissions efficiently.
@@ -112,6 +124,23 @@ Token claim customization for clients and scopes:
 - `evaluate_client_scope_mappers` - Effective mapper evaluation
 - `create_user_attribute_mapper` / `create_role_mapper` / `create_audience_mapper` - Quick templates
 
+### Identity Providers
+External authentication provider integration:
+- `list_identity_providers` / `get_identity_provider` / `create_identity_provider` - Provider CRUD
+- `update_identity_provider` / `delete_identity_provider` - Provider management
+- `export_identity_provider` / `import_identity_provider_config` - Import/export
+- `list_identity_provider_mappers` / `create_identity_provider_mapper` - Mapper management
+- `get_user_federated_identities` / `add_user_federated_identity` - User identity linking
+- `create_google_identity_provider` / `create_oidc_identity_provider` - Convenience functions
+
+### User Federation
+External user store integration:
+- `list_components` / `get_component` / `create_component` - Component management
+- `update_component` / `delete_component` / `get_component_sub_types` - Component operations
+- `list_user_storage_providers` / `get_user_storage_credential_types` - Storage providers
+- `create_ldap_user_storage` / `create_kerberos_user_storage` - Provider setup
+- `get_ldap_mappers` / `create_ldap_attribute_mapper` - LDAP mapping
+
 ### Role Management
 Fine-grained permission control:
 - `list_realm_roles` / `create_realm_role` - Realm role operations
@@ -120,17 +149,36 @@ Fine-grained permission control:
 - `get_user_realm_roles` / `assign_client_role_to_user` - User role queries
 
 ### Group Management
-Hierarchical user organization:
+Hierarchical user organization and role mappings:
 - `list_groups` / `create_group` / `update_group` - Group operations
 - `get_group_members` / `add_user_to_group` - Membership management
 - `get_user_groups` / `remove_user_from_group` - User group associations
+- `get_group_role_mappings` / `add_realm_roles_to_group` - Role assignments
+- `get_group_client_roles` / `add_client_roles_to_group` - Client role mappings
+- `copy_group_roles` - Role copying between groups
 
 ### Realm Administration
-System-wide configuration:
-- `get_accessible_realms` - List of accessible realms
+System-wide configuration and operations:
+- `get_accessible_realms` / `list_realms` - List accessible realms
 - `get_realm_info` / `update_realm_settings` - Realm configuration
 - `get_realm_events_config` / `update_realm_events_config` - Event management
 - `add_realm_default_group` / `remove_realm_default_group` - Default settings
+
+### Realm Operations
+Complete realm lifecycle management:
+- `create_realm` / `delete_realm` - Realm creation and deletion
+- `import_realm` / `export_realm` - Full realm import/export
+- `partial_import_realm` / `partial_export_realm` - Selective import/export
+- `duplicate_realm` - Realm duplication with customization
+- `backup_realm` / `restore_realm_backup` - Backup and restore operations
+
+### Client Sessions Management
+Session monitoring and control:
+- `get_client_sessions` / `get_client_offline_sessions` - Session queries
+- `get_client_session_count` / `get_all_client_sessions_summary` - Statistics
+- `find_user_sessions_across_clients` / `find_sessions_by_ip` - Session search
+- `revoke_user_consent_for_client` / `cleanup_offline_sessions` - Session management
+- `get_active_session_statistics` - Comprehensive session analytics
 
 ### Authentication Management
 Complete authentication flow control:
@@ -141,6 +189,23 @@ Complete authentication flow control:
 - `create_execution` / `delete_execution` - Execution lifecycle
 - `get_authenticator_config` / `create_authenticator_config` - Configuration management
 - `get_required_actions` / `update_required_action` - Required actions control
+
+### Events Management
+Comprehensive event tracking and auditing:
+- `get_user_events` / `clear_user_events` - User event queries and management
+- `get_admin_events` / `clear_admin_events` - Admin event queries and management
+- `get_events_config` / `update_events_config` - Event configuration
+- `enable_user_events` / `enable_admin_events` - Convenience functions
+- `get_recent_login_events` / `get_recent_admin_changes` - Quick queries
+
+### Sessions Management
+Comprehensive session control and monitoring:
+- `get_realm_session_stats` / `get_realm_sessions_summary` - Realm-wide session analytics
+- `get_user_session_details` / `logout_user_sessions` - User session management
+- `find_user_sessions` / `get_sessions_by_client` - Session search and filtering
+- `get_session_configuration` / `update_session_configuration` - Timeout management
+- `monitor_active_sessions` / `logout_all_users` - Monitoring and control
+- `cleanup_inactive_sessions` - Session maintenance and analysis
 
 ## Usage
 
@@ -341,5 +406,6 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 For issues, questions, or contributions, please visit the [GitHub repository](https://github.com/idoyudha/mcp-keycloak).
 
 ## Reference
-- [Keycloak REST API Documentation](https://www.keycloak.org/docs-api/latest/rest-api/index.html)
+- [Keycloak Admin REST API Documentation](https://www.keycloak.org/docs-api/latest/rest-api/index.html)
+- [Keycloak Admin REST API OpenAPI Spec](https://www.keycloak.org/docs-api/latest/rest-api/openapi.yaml)
 - [Keycloak Documentation](https://www.keycloak.org/documentation)

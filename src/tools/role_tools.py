@@ -174,6 +174,26 @@ async def list_client_roles(
 
 
 @mcp.tool()
+async def get_client_role(
+    client_id: str, role_name: str, realm: Optional[str] = None
+) -> Dict[str, Any]:
+    """
+    Get a specific client role.
+
+    Args:
+        client_id: Client ID (UUID)
+        role_name: Role name to get
+        realm: Target realm (uses default if not specified)
+
+    Returns:
+        Client role object
+    """
+    return await client._make_request(
+        "GET", f"/clients/{client_id}/roles/{role_name}", realm=realm
+    )
+
+
+@mcp.tool()
 async def create_client_role(
     client_id: str,
     name: str,
