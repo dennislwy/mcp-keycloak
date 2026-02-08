@@ -12,6 +12,7 @@ from . import events_tools
 from . import realm_operations_tools
 from . import client_sessions_tools
 from . import sessions_management_tools
+from . import organization_management_tools
 
 __all__ = [
     "KeycloakClient",
@@ -28,4 +29,5 @@ __all__ = [
     "realm_operations_tools",
     "client_sessions_tools",
     "sessions_management_tools",
+    "organization_management_tools",
 ]

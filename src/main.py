@@ -29,6 +29,7 @@ from .tools import events_tools  # noqa: F401
 from .tools import realm_operations_tools  # noqa: F401
 from .tools import client_sessions_tools  # noqa: F401
 from .tools import sessions_management_tools  # noqa: F401
+from .tools import organization_management_tools  # noqa: F401
 
 # Configure logging
 logging.basicConfig(

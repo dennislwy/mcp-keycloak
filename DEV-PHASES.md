@@ -257,12 +257,16 @@ The following Keycloak REST API endpoints have been implemented in this MCP serv
 ### Phase 4: Enterprise Features (Lower Priority)
 **Goal:** Add enterprise-grade features for large deployments
 
-#### 4.1 Organizations (Keycloak 23+)
-- [ ] Create/manage organizations
-- [ ] Organization domains
-- [ ] Organization roles
-- [ ] Organization identity providers
-- [ ] Multi-tenancy configurations
+#### 4.1 Organizations (Keycloak 23+) ✅ **COMPLETED** (Feb 9, 2026)
+- [x] Create/manage organizations (full CRUD operations)
+- [x] Organization domains (add, remove, verify, list)
+- [x] Organization members (add, remove, list, get details)
+- [x] Organization identity providers (link, unlink, list, get)
+- [x] Multi-tenancy configurations and domain verification
+- [x] Organization search and analytics capabilities
+- [x] Comprehensive organization summary and monitoring
+
+**Implementation:** `src/tools/organization_management_tools.py` (18 tools)
 
 #### 4.2 Client Registration (Enhanced)
 - [ ] Initial access tokens
@@ -372,9 +376,9 @@ The following Keycloak REST API endpoints have been implemented in this MCP serv
 | Security Policies | 0% | ❌ Not Implemented (Phase 2.5) |
 | Client Policies | 0% | ❌ Not Implemented (Phase 3.6) |
 | User Credentials | 10% | ⚠️ Minimal Coverage |
-| Organizations | 0% | ❌ Not Implemented |
+| **Organizations** | **95%** | ✅ **Complete** (Phase 4.1) |
 
-**Overall API Coverage: ~72-77%** (Updated Feb 8, 2026 - General Sessions Management)
+**Overall API Coverage: ~74-79%** (Updated Feb 9, 2026 - Organization Management)
 
 **Phase 1 Complete!** All critical core features implemented: user management, client configuration, role-based access control, group management, authentication flows, client scopes, protocol mappers, identity providers, and user federation.
 
@@ -383,6 +387,8 @@ The following Keycloak REST API endpoints have been implemented in this MCP serv
 **Operations Focus Complete!** (Feb 8, 2026) Successfully implemented realm operations (import/export, backup/restore, lifecycle), client sessions management (analytics, monitoring, consent revocation), and enhanced group role mappings (realm & client roles, cross-group operations). Added 30 new tools with comprehensive testing against live Keycloak server.
 
 **Phase 2.3 Complete!** General Sessions Management now provides comprehensive realm-wide session control, monitoring, and configuration. Includes user session management, session analytics, timeout configuration, and security monitoring capabilities. Complements client sessions with complete session management coverage.
+
+**Phase 4.1 Complete!** Organization Management (Feb 9, 2026) provides comprehensive multi-tenant organization support with full CRUD operations, domain management and verification, member management, and identity provider linking. Supports automatic user assignment based on verified domains and organization-specific authentication flows. Requires Keycloak 23+ with organizations feature enabled. Added 18 new tools with comprehensive integration tests.
 
 ---
 

@@ -42,6 +42,9 @@ Track and audit user activities and administrative changes with comprehensive ev
 ### 🔐 Sessions Management
 Comprehensive session control and monitoring across all clients and users. Monitor active sessions, configure session timeouts, track user activity by IP address, and perform emergency logout operations for security incidents.
 
+### 🏢 Organization Management
+Multi-tenant organization management with domain verification and member control. Create and manage organizations, associate domains with automatic user assignment, manage organization members, and link identity providers for organization-specific authentication flows. (Requires Keycloak 23+ with organizations feature enabled)
+
 ### 🔄 Group Management
 Organize users into groups, manage group hierarchies, and handle group-based permissions efficiently.
 
@@ -206,6 +209,18 @@ Comprehensive session control and monitoring:
 - `get_session_configuration` / `update_session_configuration` - Timeout management
 - `monitor_active_sessions` / `logout_all_users` - Monitoring and control
 - `cleanup_inactive_sessions` - Session maintenance and analysis
+
+### Organization Management
+Multi-tenant organization lifecycle and domain management:
+- `create_organization` / `list_organizations` / `get_organization` - Organization CRUD operations
+- `update_organization` / `delete_organization` / `search_organizations` - Organization management
+- `list_organization_members` / `add_organization_member` / `remove_organization_member` - Member management
+- `get_organization_member` - Member details retrieval
+- `list_organization_domains` / `add_organization_domain` / `remove_organization_domain` - Domain management
+- `verify_organization_domain` - Domain verification for automatic user assignment
+- `list_organization_identity_providers` / `link_organization_identity_provider` - Identity provider linking
+- `unlink_organization_identity_provider` / `get_organization_identity_provider` - Provider management
+- `get_organization_summary` - Comprehensive organization analytics and overview
 
 ## Usage
 
