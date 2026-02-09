@@ -13,6 +13,9 @@ from . import realm_operations_tools
 from . import client_sessions_tools
 from . import sessions_management_tools
 from . import organization_management_tools
+from . import attack_detection_tools
+from . import keys_management_tools
+from . import security_policies_tools
 
 __all__ = [
     "KeycloakClient",
@@ -30,4 +33,7 @@ __all__ = [
     "client_sessions_tools",
     "sessions_management_tools",
     "organization_management_tools",
+    "attack_detection_tools",
+    "keys_management_tools",
+    "security_policies_tools",
 ]

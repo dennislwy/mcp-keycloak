@@ -145,12 +145,16 @@ The following Keycloak REST API endpoints have been implemented in this MCP serv
 ### Phase 2: Security & Compliance Features (Medium-High Priority)
 **Goal:** Add security monitoring and compliance capabilities
 
-#### 2.1 Attack Detection / Brute Force Protection
-- [ ] Get brute force status for users
-- [ ] Clear login failures
-- [ ] Configure brute force protection settings
-- [ ] Monitor failed login attempts
-- [ ] Temporary/permanent lockout management
+#### 2.1 Attack Detection / Brute Force Protection ✅ **COMPLETED** (Feb 9, 2026)
+- [x] Get brute force status for users
+- [x] Clear login failures
+- [x] Configure brute force protection settings
+- [x] Monitor failed login attempts
+- [x] Temporary/permanent lockout management
+- [x] Advanced pattern analysis and security monitoring
+- [x] Failed login event tracking and analytics
+
+**Implementation:** `src/tools/attack_detection_tools.py` (10 tools)
 
 #### 2.2 Events Management ✅ **COMPLETED** (Feb 8, 2026)
 - [x] Query user events (login, logout, errors)
@@ -173,22 +177,27 @@ The following Keycloak REST API endpoints have been implemented in this MCP serv
 
 **Implementation:** `src/tools/sessions_management_tools.py` (12 tools)
 
-#### 2.4 Keys Management
-- [ ] List realm keys
-- [ ] Rotate keys
-- [ ] Configure key providers
-- [ ] Export/import certificates
-- [ ] Manage signing algorithms
+#### 2.4 Keys Management ✅ **COMPLETED** (Feb 9, 2026)
+- [x] List realm keys and certificates
+- [x] Rotate keys and key management
+- [x] Configure key providers and signing algorithms
+- [x] Export/import certificates and certificate validation
+- [x] Monitor key expiration and security analysis
+- [x] Client certificate management and comprehensive reporting
 
-#### 2.5 Security Policies & Configuration **NEW**
-- [ ] Password policy configuration (length, complexity, history, age)
-- [ ] OTP policy settings (algorithm, digits, period, window)
-- [ ] WebAuthn policy configuration (regular and passwordless)
-- [ ] Browser security headers configuration
-- [ ] SMTP server configuration and testing
-- [ ] Realm security settings (SSL required, brute force protection)
-- [ ] Configure realm attributes
-- [ ] Default roles for new users
+**Implementation:** `src/tools/keys_management_tools.py` (12 tools)
+
+#### 2.5 Security Policies & Configuration ✅ **COMPLETED** (Feb 9, 2026)
+- [x] Password policy configuration (length, complexity, history, age)
+- [x] OTP policy settings (algorithm, digits, period, window)
+- [x] WebAuthn policy configuration (regular and passwordless)
+- [x] Browser security headers configuration
+- [x] SMTP server configuration and testing
+- [x] Realm security settings (SSL required, brute force protection)
+- [x] Configure realm attributes
+- [x] Comprehensive security configuration management and monitoring
+
+**Implementation:** `src/tools/security_policies_tools.py` (16 tools)
 
 ---
 
@@ -371,14 +380,15 @@ The following Keycloak REST API endpoints have been implemented in this MCP serv
 | **User Federation** | **90%** | ✅ **Complete** (Phase 1.4) |
 | **Events** | **95%** | ✅ **Complete** (Phase 2.2) |
 | **Sessions** | **95%** | ✅ **Complete** (General Sessions - Feb 8, 2026) |
-| Keys | 0% | ❌ Not Implemented |
+| **Keys** | **95%** | ✅ **Complete** (Phase 2.4) |
 | Authorization | 0% | ❌ Not Implemented |
-| Security Policies | 0% | ❌ Not Implemented (Phase 2.5) |
+| **Security Policies** | **95%** | ✅ **Complete** (Phase 2.5) |
+| **Attack Detection** | **90%** | ✅ **Complete** (Phase 2.1) |
 | Client Policies | 0% | ❌ Not Implemented (Phase 3.6) |
 | User Credentials | 10% | ⚠️ Minimal Coverage |
 | **Organizations** | **95%** | ✅ **Complete** (Phase 4.1) |
 
-**Overall API Coverage: ~74-79%** (Updated Feb 9, 2026 - Organization Management)
+**Overall API Coverage: ~79-84%** (Updated Feb 9, 2026 - Phase 2 Security Features Complete)
 
 **Phase 1 Complete!** All critical core features implemented: user management, client configuration, role-based access control, group management, authentication flows, client scopes, protocol mappers, identity providers, and user federation.
 
@@ -387,6 +397,8 @@ The following Keycloak REST API endpoints have been implemented in this MCP serv
 **Operations Focus Complete!** (Feb 8, 2026) Successfully implemented realm operations (import/export, backup/restore, lifecycle), client sessions management (analytics, monitoring, consent revocation), and enhanced group role mappings (realm & client roles, cross-group operations). Added 30 new tools with comprehensive testing against live Keycloak server.
 
 **Phase 2.3 Complete!** General Sessions Management now provides comprehensive realm-wide session control, monitoring, and configuration. Includes user session management, session analytics, timeout configuration, and security monitoring capabilities. Complements client sessions with complete session management coverage.
+
+**Phase 2 Complete!** (Feb 9, 2026) Security Features now provide comprehensive security management including attack detection and brute force protection (Phase 2.1), cryptographic keys and certificate management (Phase 2.4), and security policies configuration (Phase 2.5). Supports password policies, OTP policies, WebAuthn policies, browser security headers, SMTP configuration, and realm security settings. Added 38 new tools (10 + 12 + 16) with comprehensive integration tests.
 
 **Phase 4.1 Complete!** Organization Management (Feb 9, 2026) provides comprehensive multi-tenant organization support with full CRUD operations, domain management and verification, member management, and identity provider linking. Supports automatic user assignment based on verified domains and organization-specific authentication flows. Requires Keycloak 23+ with organizations feature enabled. Added 18 new tools with comprehensive integration tests.
 

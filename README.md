@@ -42,6 +42,15 @@ Track and audit user activities and administrative changes with comprehensive ev
 ### 🔐 Sessions Management
 Comprehensive session control and monitoring across all clients and users. Monitor active sessions, configure session timeouts, track user activity by IP address, and perform emergency logout operations for security incidents.
 
+### 🛡️ Attack Detection & Brute Force Protection
+Advanced security monitoring and attack detection capabilities. Monitor failed login attempts, configure brute force protection settings, analyze attack patterns, and manage user lockouts for enhanced security.
+
+### 🔑 Keys & Certificate Management
+Comprehensive cryptographic keys and certificate management. Monitor key expiration, manage signing algorithms, export and validate certificates, and rotate realm keys for maintaining security.
+
+### ⚙️ Security Policies & Configuration
+Complete security policy configuration including password policies, OTP policies, WebAuthn settings, browser security headers, SMTP configuration, and comprehensive realm security settings.
+
 ### 🏢 Organization Management
 Multi-tenant organization management with domain verification and member control. Create and manage organizations, associate domains with automatic user assignment, manage organization members, and link identity providers for organization-specific authentication flows. (Requires Keycloak 23+ with organizations feature enabled)
 
@@ -209,6 +218,34 @@ Comprehensive session control and monitoring:
 - `get_session_configuration` / `update_session_configuration` - Timeout management
 - `monitor_active_sessions` / `logout_all_users` - Monitoring and control
 - `cleanup_inactive_sessions` - Session maintenance and analysis
+
+### Attack Detection & Brute Force Protection
+Advanced security monitoring and threat detection:
+- `get_user_brute_force_status` / `clear_user_login_failures` - User lockout management
+- `configure_brute_force_protection` / `get_brute_force_configuration` - Protection settings
+- `monitor_failed_login_attempts` / `get_failed_login_events` - Attack monitoring
+- `analyze_brute_force_patterns` / `get_brute_force_statistics` - Pattern analysis
+- `enable_brute_force_protection` / `get_security_monitoring_summary` - Security overview
+
+### Keys & Certificate Management
+Cryptographic keys and certificate operations:
+- `get_realm_keys` / `get_realm_certificates` - Key and certificate inventory
+- `analyze_key_security` / `monitor_key_expiration` - Security analysis
+- `get_key_providers` / `get_signing_algorithms` - Provider and algorithm management
+- `rotate_realm_keys` / `export_realm_certificate` - Key rotation and export
+- `get_client_certificates` / `validate_certificate_chain` - Certificate validation
+- `get_keys_summary` / `get_comprehensive_keys_report` - Comprehensive reporting
+
+### Security Policies & Configuration
+Complete security policy management:
+- `get_password_policy` / `update_password_policy` - Password policy configuration
+- `get_otp_policy` / `update_otp_policy` - OTP policy management
+- `get_webauthn_policy` / `update_webauthn_policy` - WebAuthn policy configuration
+- `get_browser_security_headers` / `update_browser_security_headers` - Browser security
+- `get_smtp_configuration` / `update_smtp_configuration` / `test_smtp_connection` - SMTP setup
+- `get_realm_security_settings` / `update_realm_security_settings` - Realm security
+- `get_realm_attributes` / `update_realm_attributes` - Custom attributes
+- `get_comprehensive_security_summary` - Complete security overview
 
 ### Organization Management
 Multi-tenant organization lifecycle and domain management:
