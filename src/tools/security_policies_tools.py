@@ -140,7 +140,7 @@ async def update_password_policy(
     # Update realm with new password policy
     update_data = {"passwordPolicy": password_policy}
 
-    await client._make_request("PUT", "", json_data=update_data, realm=realm)
+    await client._make_request("PUT", "", data=update_data, realm=realm)
 
     return await get_password_policy(realm=realm)
 
@@ -236,7 +236,7 @@ async def update_otp_policy(
     if supported_applications is not None:
         update_data["otpSupportedApplications"] = supported_applications
 
-    await client._make_request("PUT", "", json_data=update_data, realm=realm)
+    await client._make_request("PUT", "", data=update_data, realm=realm)
 
     return await get_otp_policy(realm=realm)
 
@@ -408,7 +408,7 @@ async def update_webauthn_policy(
     if policy_type == "passwordless" and passkeys_enabled is not None:
         update_data[f"{prefix}PasskeysEnabled"] = passkeys_enabled
 
-    await client._make_request("PUT", "", json_data=update_data, realm=realm)
+    await client._make_request("PUT", "", data=update_data, realm=realm)
 
     return await get_webauthn_policy(realm=realm)
 
@@ -491,7 +491,7 @@ async def update_browser_security_headers(
 
     update_data = {"browserSecurityHeaders": headers_config}
 
-    await client._make_request("PUT", "", json_data=update_data, realm=realm)
+    await client._make_request("PUT", "", data=update_data, realm=realm)
 
     return await get_browser_security_headers(realm=realm)
 
@@ -595,7 +595,7 @@ async def update_smtp_configuration(
 
     update_data = {"smtpServer": smtp_config}
 
-    await client._make_request("PUT", "", json_data=update_data, realm=realm)
+    await client._make_request("PUT", "", data=update_data, realm=realm)
 
     return await get_smtp_configuration(realm=realm)
 
@@ -616,7 +616,7 @@ async def test_smtp_connection(
     """
     try:
         await client._make_request(
-            "POST", "/testSMTPConnection", json_data={"email": test_email}, realm=realm
+            "POST", "/testSMTPConnection", data={"email": test_email}, realm=realm
         )
 
         return {
@@ -785,7 +785,7 @@ async def update_realm_security_settings(
     if remember_me is not None:
         update_data["rememberMe"] = remember_me
 
-    await client._make_request("PUT", "", json_data=update_data, realm=realm)
+    await client._make_request("PUT", "", data=update_data, realm=realm)
 
     return await get_realm_security_settings(realm=realm)
 
@@ -825,7 +825,7 @@ async def update_realm_attributes(
     """
     update_data = {"attributes": attributes}
 
-    await client._make_request("PUT", "", json_data=update_data, realm=realm)
+    await client._make_request("PUT", "", data=update_data, realm=realm)
 
     return await get_realm_attributes(realm=realm)
 
