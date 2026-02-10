@@ -1,28 +1,29 @@
 """Basic import tests that don't require Keycloak connection"""
 
+import importlib
+import pkgutil
+from pathlib import Path
+
 
 def test_can_import_main():
     """Test that we can import the main module"""
-    from src.main import KeycloakMCPServer, main
+    from src.main import main, OriginValidationMiddleware
 
-    assert KeycloakMCPServer is not None
     assert main is not None
+    assert OriginValidationMiddleware is not None
 
 
 def test_can_import_tools():
     """Test that we can import all tool modules"""
-    from src.tools import user_tools
-    from src.tools import client_tools
-    from src.tools import realm_tools
-    from src.tools import role_tools
-    from src.tools import group_tools
+    import src.tools
 
-    # Just check they imported successfully
-    assert user_tools is not None
-    assert client_tools is not None
-    assert realm_tools is not None
-    assert role_tools is not None
-    assert group_tools is not None
+    tools_path = Path(src.tools.__file__).parent
+
+    # Discover all Python modules in src.tools
+    for finder, name, ispkg in pkgutil.iter_modules([str(tools_path)]):
+        if not name.startswith("_"):  # Skip __init__ and private modules
+            module = importlib.import_module(f"src.tools.{name}")
+            assert module is not None, f"Failed to import src.tools.{name}"
 
 
 def test_can_import_keycloak_client():
@@ -34,9 +35,10 @@ def test_can_import_keycloak_client():
 
 def test_can_import_config():
     """Test that we can import the config module"""
-    from src.common.config import Config
+    from src.common.config import KEYCLOAK_CFG
 
-    assert Config is not None
+    assert KEYCLOAK_CFG is not None
+    assert isinstance(KEYCLOAK_CFG, dict)
 
 
 def test_can_import_server():

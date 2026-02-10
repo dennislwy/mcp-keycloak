@@ -47,11 +47,10 @@ except ImportError:
 class TestOrganizationManagement:
     """Test organization CRUD operations."""
 
-    def __init__(self):
-        self.test_org_id = None
-        self.test_org_name = f"test-org-{uuid.uuid4().hex[:8]}"
-        self.test_user_id = None
-        self.test_domain = f"test-{uuid.uuid4().hex[:8]}.example.com"
+    test_org_id = None
+    test_org_name = f"test-org-{uuid.uuid4().hex[:8]}"
+    test_user_id = None
+    test_domain = f"test-{uuid.uuid4().hex[:8]}.example.com"
 
     async def test_create_organization(self):
         """Test creating a new organization."""
@@ -155,11 +154,10 @@ class TestOrganizationManagement:
 class TestOrganizationMembers:
     """Test organization members management."""
 
-    def __init__(self):
-        self.test_org_id = None
-        self.test_org_name = f"test-members-org-{uuid.uuid4().hex[:8]}"
-        self.test_user_id = None
-        self.test_username = f"test-member-{uuid.uuid4().hex[:8]}"
+    test_org_id = None
+    test_org_name = f"test-members-org-{uuid.uuid4().hex[:8]}"
+    test_user_id = None
+    test_username = f"test-member-{uuid.uuid4().hex[:8]}"
 
     async def setup_test_data(self):
         """Set up test organization and user for member tests."""
@@ -276,10 +274,9 @@ class TestOrganizationMembers:
 class TestOrganizationDomains:
     """Test organization domains management."""
 
-    def __init__(self):
-        self.test_org_id = None
-        self.test_org_name = f"test-domains-org-{uuid.uuid4().hex[:8]}"
-        self.test_domain = f"test-{uuid.uuid4().hex[:8]}.example.com"
+    test_org_id = None
+    test_org_name = f"test-domains-org-{uuid.uuid4().hex[:8]}"
+    test_domain = f"test-{uuid.uuid4().hex[:8]}.example.com"
 
     async def setup_test_organization(self):
         """Set up test organization for domain tests."""
@@ -393,10 +390,9 @@ class TestOrganizationDomains:
 class TestOrganizationIdentityProviders:
     """Test organization identity providers management."""
 
-    def __init__(self):
-        self.test_org_id = None
-        self.test_org_name = f"test-idp-org-{uuid.uuid4().hex[:8]}"
-        self.test_idp_alias = f"test-idp-{uuid.uuid4().hex[:8]}"
+    test_org_id = None
+    test_org_name = f"test-idp-org-{uuid.uuid4().hex[:8]}"
+    test_idp_alias = f"test-idp-{uuid.uuid4().hex[:8]}"
 
     async def setup_test_data(self):
         """Set up test organization and identity provider."""
@@ -526,9 +522,8 @@ class TestOrganizationIdentityProviders:
 class TestOrganizationSummaryAndSearch:
     """Test organization summary and convenience functions."""
 
-    def __init__(self):
-        self.test_org_id = None
-        self.test_org_name = f"test-summary-org-{uuid.uuid4().hex[:8]}"
+    test_org_id = None
+    test_org_name = f"test-summary-org-{uuid.uuid4().hex[:8]}"
 
     async def setup_test_organization(self):
         """Set up test organization for summary tests."""

@@ -302,7 +302,7 @@ async def backup_realm(
 
     # Add backup metadata
     backup_info = {
-        "backup_timestamp": datetime.datetime.utcnow().isoformat() + "Z",
+        "backup_timestamp": datetime.datetime.now(datetime.UTC).isoformat() + "Z",
         "backup_realm": realm or client.realm_name,
         "backup_version": "1.0",
         "keycloak_version": backup_data.get("keycloakVersion", "unknown"),

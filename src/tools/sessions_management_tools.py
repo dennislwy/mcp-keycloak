@@ -542,7 +542,7 @@ def _get_current_timestamp(self):
     """Get current timestamp in ISO format."""
     import datetime
 
-    return datetime.datetime.utcnow().isoformat() + "Z"
+    return datetime.datetime.now(datetime.UTC).isoformat() + "Z"
 
 
 # Add the method to the client class

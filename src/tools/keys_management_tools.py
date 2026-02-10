@@ -575,7 +575,7 @@ async def monitor_key_expiration(
     import datetime
 
     keys_summary = await get_realm_keys_summary(realm=realm)
-    current_time = datetime.datetime.utcnow()
+    current_time = datetime.datetime.now(datetime.UTC)
     alert_threshold = current_time + datetime.timedelta(days=days_ahead)
 
     monitoring_report = {
@@ -600,7 +600,7 @@ async def monitor_key_expiration(
         valid_to = key.get("valid_to")
         if valid_to:
             # Convert milliseconds to datetime
-            expiry_date = datetime.datetime.utcfromtimestamp(valid_to / 1000)
+            expiry_date = datetime.datetime.fromtimestamp(valid_to / 1000, datetime.UTC)
 
             key_status = {
                 "kid": key["kid"],
