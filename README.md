@@ -439,6 +439,76 @@ Query and analyze user data, session information, and access patterns to gain in
 ### 🚀 DevOps Integration
 Integrate Keycloak management into your CI/CD pipelines, allowing automated configuration of identity services.
 
+## Testing
+
+The project includes a comprehensive test suite with 141 integration tests covering all tool categories. For detailed information, see [tests/README.md](tests/README.md).
+
+### Prerequisites
+
+1. **Keycloak Server** - You need a running Keycloak server:
+   ```bash
+   # Quick start with Docker
+   docker run -p 8080:8080 \
+     -e KEYCLOAK_ADMIN=admin \
+     -e KEYCLOAK_ADMIN_PASSWORD=admin \
+     quay.io/keycloak/keycloak:latest start-dev
+   ```
+
+2. **Environment Configuration** - Create a `.env` file:
+   ```bash
+   cp .env.example .env
+   # Edit .env with your Keycloak credentials
+   ```
+
+3. **Install Dependencies**:
+   ```bash
+   # Using uv (recommended)
+   uv sync
+
+   # Or with pip
+   pip install -e ".[dev]"
+   ```
+
+### Running Tests
+
+```bash
+# Run all tests
+uv run pytest tests/
+
+# Run specific test file
+uv run pytest tests/test_user_management.py -v
+
+# Run with coverage
+uv run pytest --cov=src tests/
+
+# Skip integration tests (for quick checks)
+uv run pytest -m "not integration"
+```
+
+### Test Coverage
+
+All tool categories have comprehensive test coverage:
+- ✅ User Management (9 tests)
+- ✅ Client Management (9 tests)
+- ✅ Role Management (5 tests)
+- ✅ Group Management (7 tests)
+- ✅ Realm Administration (7 tests)
+- ✅ Realm Operations (15 tests)
+- ✅ Authentication Management (10 tests)
+- ✅ Identity Providers (6 tests)
+- ✅ Events Management (14 tests)
+- ✅ Sessions Management (9 tests)
+- ✅ Attack Detection (6 tests)
+- ✅ Keys Management (11 tests)
+- ✅ Security Policies (16 tests)
+- ✅ Organization Management (8 tests)
+- ✅ Client Scopes (4 tests)
+- ✅ Protocol Mappers (4 tests)
+
+**Total: 141 tests across 16 test files**
+
+For troubleshooting, detailed setup instructions, and contribution guidelines, see [tests/README.md](tests/README.md).
+
 ## Requirements
 
 - Python 3.8 or higher
