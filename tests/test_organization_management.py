@@ -59,6 +59,54 @@ async def check_organizations_feature():
     return result
 
 
+# Module-level tracking of test artifacts for cleanup
+_test_artifacts = {
+    "organizations": [],
+    "users": [],
+    "identity_providers": [],
+}
+
+
+def pytest_runtest_teardown(item):
+    """Cleanup test artifacts after all tests complete."""
+    # This runs after each test, but we'll only cleanup at module end
+    pass
+
+
+@pytest.fixture(scope="module", autouse=True)
+async def cleanup_all_test_artifacts():
+    """Cleanup all test artifacts after the module completes."""
+    yield
+    # Cleanup after all tests in the module
+    print("\n[*] Cleaning up test artifacts...")
+
+    # Clean up users
+    for user_id in _test_artifacts["users"]:
+        try:
+            await user_tools.delete_user(user_id)
+            print(f"  [OK] Deleted user {user_id}")
+        except Exception as e:
+            print(f"  [ERROR] Failed to delete user {user_id}: {e}")
+
+    # Clean up identity providers
+    for idp_alias in _test_artifacts["identity_providers"]:
+        try:
+            await identity_provider_tools.delete_identity_provider(idp_alias)
+            print(f"  [OK] Deleted IDP {idp_alias}")
+        except Exception as e:
+            print(f"  [ERROR] Failed to delete IDP {idp_alias}: {e}")
+
+    # Clean up organizations
+    for org_id in _test_artifacts["organizations"]:
+        try:
+            await organization_management_tools.delete_organization(org_id)
+            print(f"  [OK] Deleted organization {org_id}")
+        except Exception as e:
+            print(f"  [ERROR] Failed to delete organization {org_id}: {e}")
+
+    print("[*] Cleanup complete")
+
+
 @pytest.mark.integration
 class TestOrganizationManagement:
     """Test organization CRUD operations.
@@ -88,6 +136,7 @@ class TestOrganizationManagement:
         )
         if orgs:
             self.test_org_id = orgs[0]["id"]
+            _test_artifacts["organizations"].append(self.test_org_id)
 
     async def test_list_organizations(self, check_organizations_feature):
         """Test listing organizations with various parameters."""
@@ -181,32 +230,42 @@ class TestOrganizationMembers:
 
     async def setup_test_data(self):
         """Set up test organization and user for member tests."""
-        try:
-            # Create test organization
-            await organization_management_tools.create_organization(
-                name=self.test_org_name,
-                description="Test organization for member management testing",
-            )
+        # Only create organization if it doesn't exist
+        if not self.test_org_id:
+            try:
+                await organization_management_tools.create_organization(
+                    name=self.test_org_name,
+                    description="Test organization for member management testing",
+                )
 
-            # Get organization ID
-            orgs = await organization_management_tools.list_organizations(
-                search=self.test_org_name, exact=True
-            )
-            if orgs:
-                self.test_org_id = orgs[0]["id"]
+                # Get organization ID
+                orgs = await organization_management_tools.list_organizations(
+                    search=self.test_org_name, exact=True
+                )
+                if orgs:
+                    self.test_org_id = orgs[0]["id"]
+                    _test_artifacts["organizations"].append(self.test_org_id)
+            except Exception as e:
+                print(f"Organization setup failed: {e}")
 
-            # Create test user
-            user_result = await user_tools.create_user(
-                username=self.test_username,
-                email=f"{self.test_username}@example.com",
-                first_name="Test",
-                last_name="Member",
-                enabled=True,
-            )
-            self.test_user_id = user_result["user_id"]
-
-        except Exception as e:
-            print(f"Setup failed: {e}")
+        # Only create user if it doesn't exist
+        if not self.test_user_id:
+            try:
+                await user_tools.create_user(
+                    username=self.test_username,
+                    email=f"{self.test_username}@example.com",
+                    first_name="Test",
+                    last_name="Member",
+                    enabled=True,
+                )
+                # Find the created user to get its ID
+                users = await user_tools.list_users(search=self.test_username)
+                test_user = next((u for u in users if u["username"] == self.test_username), None)
+                if test_user:
+                    self.test_user_id = test_user["id"]
+                    _test_artifacts["users"].append(self.test_user_id)
+            except Exception as e:
+                print(f"User setup failed: {e}")
 
     async def test_list_organization_members_empty(self, check_organizations_feature):
         """Test listing members of an organization (initially empty)."""
@@ -277,18 +336,6 @@ class TestOrganizationMembers:
         assert result["status"] == "member_removed"
         assert result["user_id"] == self.test_user_id
 
-    async def cleanup_test_data(self):
-        """Clean up test data."""
-        try:
-            if self.test_user_id:
-                await user_tools.delete_user(self.test_user_id)
-            if self.test_org_id:
-                await organization_management_tools.delete_organization(
-                    self.test_org_id
-                )
-        except Exception as e:
-            print(f"Cleanup failed: {e}")
-
 
 @pytest.mark.integration
 class TestOrganizationDomains:
@@ -304,22 +351,23 @@ class TestOrganizationDomains:
 
     async def setup_test_organization(self):
         """Set up test organization for domain tests."""
-        try:
-            # Create test organization
-            await organization_management_tools.create_organization(
-                name=self.test_org_name,
-                description="Test organization for domain management testing",
-            )
+        # Only create organization if it doesn't exist
+        if not self.test_org_id:
+            try:
+                await organization_management_tools.create_organization(
+                    name=self.test_org_name,
+                    description="Test organization for domain management testing",
+                )
 
-            # Get organization ID
-            orgs = await organization_management_tools.list_organizations(
-                search=self.test_org_name, exact=True
-            )
-            if orgs:
-                self.test_org_id = orgs[0]["id"]
-
-        except Exception as e:
-            print(f"Domain test setup failed: {e}")
+                # Get organization ID
+                orgs = await organization_management_tools.list_organizations(
+                    search=self.test_org_name, exact=True
+                )
+                if orgs:
+                    self.test_org_id = orgs[0]["id"]
+                    _test_artifacts["organizations"].append(self.test_org_id)
+            except Exception as e:
+                print(f"Domain test setup failed: {e}")
 
     async def test_list_organization_domains_empty(self, check_organizations_feature):
         """Test listing domains of an organization (initially empty)."""
@@ -420,16 +468,6 @@ class TestOrganizationDomains:
                 pytest.skip(f"Organization domains endpoint not available: {e}")
             raise
 
-    async def cleanup_test_organization(self):
-        """Clean up test organization."""
-        try:
-            if self.test_org_id:
-                await organization_management_tools.delete_organization(
-                    self.test_org_id
-                )
-        except Exception as e:
-            print(f"Domain test cleanup failed: {e}")
-
 
 @pytest.mark.integration
 class TestOrganizationIdentityProviders:
@@ -441,21 +479,27 @@ class TestOrganizationIdentityProviders:
 
     async def setup_test_data(self):
         """Set up test organization and identity provider."""
-        try:
-            # Create test organization
-            await organization_management_tools.create_organization(
-                name=self.test_org_name,
-                description="Test organization for identity provider testing",
-            )
+        # Only create organization if it doesn't exist
+        if not self.test_org_id:
+            try:
+                await organization_management_tools.create_organization(
+                    name=self.test_org_name,
+                    description="Test organization for identity provider testing",
+                )
 
-            # Get organization ID
-            orgs = await organization_management_tools.list_organizations(
-                search=self.test_org_name, exact=True
-            )
-            if orgs:
-                self.test_org_id = orgs[0]["id"]
+                # Get organization ID
+                orgs = await organization_management_tools.list_organizations(
+                    search=self.test_org_name, exact=True
+                )
+                if orgs:
+                    self.test_org_id = orgs[0]["id"]
+                    _test_artifacts["organizations"].append(self.test_org_id)
+            except Exception as e:
+                print(f"Organization setup failed: {e}")
 
-            # Create test identity provider
+        # Only create identity provider if we don't have one yet
+        # (check if it's already in artifacts to avoid duplicates)
+        if self.test_idp_alias not in _test_artifacts["identity_providers"]:
             try:
                 await identity_provider_tools.create_identity_provider(
                     alias=self.test_idp_alias,
@@ -469,11 +513,9 @@ class TestOrganizationIdentityProviders:
                         "clientSecret": "test-client-secret",
                     },
                 )
+                _test_artifacts["identity_providers"].append(self.test_idp_alias)
             except Exception as e:
-                print(f"Identity provider creation failed (may already exist): {e}")
-
-        except Exception as e:
-            print(f"Identity provider test setup failed: {e}")
+                print(f"Identity provider creation failed: {e}")
 
     async def test_list_organization_identity_providers_empty(self, check_organizations_feature):
         """Test listing identity providers of an organization (initially empty)."""
@@ -548,20 +590,6 @@ class TestOrganizationIdentityProviders:
         except Exception as e:
             print(f"NOTE: Identity provider unlinking may not be supported: {e}")
 
-    async def cleanup_test_data(self):
-        """Clean up test data."""
-        try:
-            if self.test_idp_alias:
-                await identity_provider_tools.delete_identity_provider(
-                    self.test_idp_alias
-                )
-            if self.test_org_id:
-                await organization_management_tools.delete_organization(
-                    self.test_org_id
-                )
-        except Exception as e:
-            print(f"Identity provider test cleanup failed: {e}")
-
 
 @pytest.mark.integration
 class TestOrganizationSummaryAndSearch:
@@ -572,23 +600,24 @@ class TestOrganizationSummaryAndSearch:
 
     async def setup_test_organization(self):
         """Set up test organization for summary tests."""
-        try:
-            # Create test organization
-            await organization_management_tools.create_organization(
-                name=self.test_org_name,
-                description="Test organization for summary testing",
-                attributes={"testAttribute": "testValue"},
-            )
+        # Only create organization if it doesn't exist
+        if not self.test_org_id:
+            try:
+                await organization_management_tools.create_organization(
+                    name=self.test_org_name,
+                    description="Test organization for summary testing",
+                    attributes={"testAttribute": "testValue"},
+                )
 
-            # Get organization ID
-            orgs = await organization_management_tools.list_organizations(
-                search=self.test_org_name, exact=True
-            )
-            if orgs:
-                self.test_org_id = orgs[0]["id"]
-
-        except Exception as e:
-            print(f"Summary test setup failed: {e}")
+                # Get organization ID
+                orgs = await organization_management_tools.list_organizations(
+                    search=self.test_org_name, exact=True
+                )
+                if orgs:
+                    self.test_org_id = orgs[0]["id"]
+                    _test_artifacts["organizations"].append(self.test_org_id)
+            except Exception as e:
+                print(f"Summary test setup failed: {e}")
 
     async def test_get_organization_summary(self, check_organizations_feature):
         """Test getting comprehensive organization summary."""
@@ -616,16 +645,6 @@ class TestOrganizationSummaryAndSearch:
         assert "domains_count" in summary["summary"]
         assert "verified_domains_count" in summary["summary"]
         assert "identity_providers_count" in summary["summary"]
-
-    async def cleanup_test_organization(self):
-        """Clean up test organization."""
-        try:
-            if self.test_org_id:
-                await organization_management_tools.delete_organization(
-                    self.test_org_id
-                )
-        except Exception as e:
-            print(f"Summary test cleanup failed: {e}")
 
 
 def run_tests():
