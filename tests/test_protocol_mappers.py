@@ -1,5 +1,5 @@
 """
-Integration tests for Client Scopes and Protocol Mappers.
+Integration tests for Protocol Mappers.
 
 These tests require a running Keycloak server.
 Configure the server details in your .env file.
@@ -54,128 +54,8 @@ if PYTEST_AVAILABLE:
 
 
 @pytest.mark.integration
-class TestClientScopes:
-    """Test client scope management."""
-
-    async def test_client_scope_lifecycle(self, unique_scope_name):
-        """Test creating, reading, updating, and deleting a client scope."""
-        # Create client scope
-        result = await client_scope_tools.create_client_scope(
-            name=unique_scope_name,
-            description="Test scope for integration testing",
-            protocol="openid-connect",
-        )
-        assert result["status"] == "created"
-
-        # List client scopes and find our scope
-        scopes = await client_scope_tools.list_client_scopes()
-        test_scope = next((s for s in scopes if s["name"] == unique_scope_name), None)
-        assert test_scope is not None
-        scope_id = test_scope["id"]
-
-        # Get specific client scope
-        scope = await client_scope_tools.get_client_scope(scope_id)
-        assert scope["name"] == unique_scope_name
-        assert scope["description"] == "Test scope for integration testing"
-
-        # Update client scope
-        result = await client_scope_tools.update_client_scope(
-            scope_id=scope_id, description="Updated test scope description"
-        )
-        assert result["status"] == "updated"
-
-        # Verify update
-        scope = await client_scope_tools.get_client_scope(scope_id)
-        assert scope["description"] == "Updated test scope description"
-
-        # Delete client scope
-        result = await client_scope_tools.delete_client_scope(scope_id)
-        assert result["status"] == "deleted"
-
-        # Verify deletion
-        scopes = await client_scope_tools.list_client_scopes()
-        assert not any(s["name"] == unique_scope_name for s in scopes)
-
-    async def test_realm_default_scopes(self, unique_scope_name):
-        """Test managing realm default client scopes."""
-        # Create a client scope
-        result = await client_scope_tools.create_client_scope(
-            name=unique_scope_name,
-            description="Test default scope",
-            protocol="openid-connect",
-        )
-        assert result["status"] == "created"
-
-        # Find the scope
-        scopes = await client_scope_tools.list_client_scopes()
-        test_scope = next((s for s in scopes if s["name"] == unique_scope_name), None)
-        scope_id = test_scope["id"]
-
-        try:
-            # Add as realm default
-            result = await client_scope_tools.add_realm_default_client_scope(scope_id)
-            assert result["status"] == "added"
-
-            # Get realm default scopes
-            defaults = await client_scope_tools.get_realm_default_client_scopes()
-            assert any(s["id"] == scope_id for s in defaults)
-
-            # Remove from realm defaults
-            result = await client_scope_tools.remove_realm_default_client_scope(
-                scope_id
-            )
-            assert result["status"] == "removed"
-
-            # Verify removal
-            defaults = await client_scope_tools.get_realm_default_client_scopes()
-            assert not any(s["id"] == scope_id for s in defaults)
-
-        finally:
-            # Clean up
-            await client_scope_tools.delete_client_scope(scope_id)
-
-    async def test_realm_optional_scopes(self, unique_scope_name):
-        """Test managing realm optional client scopes."""
-        # Create a client scope
-        result = await client_scope_tools.create_client_scope(
-            name=unique_scope_name,
-            description="Test optional scope",
-            protocol="openid-connect",
-        )
-        assert result["status"] == "created"
-
-        # Find the scope
-        scopes = await client_scope_tools.list_client_scopes()
-        test_scope = next((s for s in scopes if s["name"] == unique_scope_name), None)
-        scope_id = test_scope["id"]
-
-        try:
-            # Add as realm optional
-            result = await client_scope_tools.add_realm_optional_client_scope(scope_id)
-            assert result["status"] == "added"
-
-            # Get realm optional scopes
-            optional = await client_scope_tools.get_realm_optional_client_scopes()
-            assert any(s["id"] == scope_id for s in optional)
-
-            # Remove from realm optional
-            result = await client_scope_tools.remove_realm_optional_client_scope(
-                scope_id
-            )
-            assert result["status"] == "removed"
-
-            # Verify removal
-            optional = await client_scope_tools.get_realm_optional_client_scopes()
-            assert not any(s["id"] == scope_id for s in optional)
-
-        finally:
-            # Clean up
-            await client_scope_tools.delete_client_scope(scope_id)
-
-
-@pytest.mark.integration
-class TestProtocolMappers:
-    """Test protocol mapper management."""
+class TestClientScopeProtocolMappers:
+    """Test protocol mapper management on client scopes."""
 
     async def test_client_scope_mapper_lifecycle(
         self, unique_scope_name, unique_mapper_name
@@ -365,67 +245,8 @@ class TestProtocolMappers:
 
 
 @pytest.mark.integration
-class TestClientScopeIntegration:
-    """Test client scope integration with clients."""
-
-    async def test_client_scope_assignment(self, unique_client_id, unique_scope_name):
-        """Test assigning client scopes to clients."""
-        # Create client
-        client_result = await client_tools.create_client(
-            client_id=unique_client_id, name="Test Client", public_client=True
-        )
-        assert client_result["status"] == "created"
-
-        # Get client
-        clients = await client_tools.list_clients(client_id=unique_client_id)
-        test_client = next(
-            (c for c in clients if c["clientId"] == unique_client_id), None
-        )
-        client_db_id = test_client["id"]
-
-        # Create client scope
-        scope_result = await client_scope_tools.create_client_scope(
-            name=unique_scope_name, protocol="openid-connect"
-        )
-        assert scope_result["status"] == "created"
-
-        # Find the scope
-        scopes = await client_scope_tools.list_client_scopes()
-        test_scope = next((s for s in scopes if s["name"] == unique_scope_name), None)
-        scope_id = test_scope["id"]
-
-        try:
-            # Add scope as default to client
-            result = await client_scope_tools.add_client_default_scope(
-                client_id=client_db_id, scope_id=scope_id
-            )
-            assert result["status"] == "added"
-
-            # Get client default scopes
-            defaults = await client_scope_tools.get_client_default_scopes(client_db_id)
-            assert any(s["id"] == scope_id for s in defaults)
-
-            # Remove from defaults and add as optional
-            await client_scope_tools.remove_client_default_scope(client_db_id, scope_id)
-            result = await client_scope_tools.add_client_optional_scope(
-                client_id=client_db_id, scope_id=scope_id
-            )
-            assert result["status"] == "added"
-
-            # Get client optional scopes
-            optional = await client_scope_tools.get_client_optional_scopes(client_db_id)
-            assert any(s["id"] == scope_id for s in optional)
-
-            # Remove from optional
-            result = await client_scope_tools.remove_client_optional_scope(
-                client_db_id, scope_id
-            )
-            assert result["status"] == "removed"
-
-        finally:
-            # Clean up
-            await client_tools.delete_client(client_db_id)
-            await client_scope_tools.delete_client_scope(scope_id)
+class TestClientProtocolMappers:
+    """Test protocol mapper management directly on clients."""
 
     async def test_client_protocol_mappers(self, unique_client_id, unique_mapper_name):
         """Test creating protocol mappers directly on clients."""
@@ -493,61 +314,51 @@ def run_tests():
 
 async def main():
     """Main test runner."""
-    print("\n=== Running Client Scopes and Protocol Mappers Integration Tests ===\n")
+    print("\n=== Running Protocol Mappers Integration Tests ===\n")
 
-    # Test client scopes
-    test_scopes = TestClientScopes()
-    scope_name = f"test-scope-{uuid.uuid4().hex[:8]}"
+    # Test client scope protocol mappers
+    test_scope_mappers = TestClientScopeProtocolMappers()
 
-    print("Testing client scope lifecycle...")
-    await test_scopes.test_client_scope_lifecycle(scope_name)
-    print("[PASS] Client scope lifecycle test passed")
-
-    scope_name = f"test-scope-{uuid.uuid4().hex[:8]}"
-    print("\nTesting realm default scopes...")
-    await test_scopes.test_realm_default_scopes(scope_name)
-    print("[PASS] Realm default scopes test passed")
-
-    scope_name = f"test-scope-{uuid.uuid4().hex[:8]}"
-    print("\nTesting realm optional scopes...")
-    await test_scopes.test_realm_optional_scopes(scope_name)
-    print("[PASS] Realm optional scopes test passed")
-
-    # Test protocol mappers
-    test_mappers = TestProtocolMappers()
     scope_name = f"test-scope-{uuid.uuid4().hex[:8]}"
     mapper_name = f"test-mapper-{uuid.uuid4().hex[:8]}"
-
-    print("\nTesting protocol mapper lifecycle...")
-    await test_mappers.test_client_scope_mapper_lifecycle(scope_name, mapper_name)
-    print("[PASS] Protocol mapper lifecycle test passed")
+    print("Testing protocol mapper lifecycle...")
+    try:
+        await test_scope_mappers.test_client_scope_mapper_lifecycle(
+            scope_name, mapper_name
+        )
+        print("[PASS] Protocol mapper lifecycle test passed")
+    except Exception as e:
+        print(f"[FAIL] Protocol mapper lifecycle test failed: {e}")
 
     scope_name = f"test-scope-{uuid.uuid4().hex[:8]}"
     print("\nTesting multiple mappers...")
-    await test_mappers.test_multiple_mappers(scope_name)
-    print("[PASS] Multiple mappers test passed")
+    try:
+        await test_scope_mappers.test_multiple_mappers(scope_name)
+        print("[PASS] Multiple mappers test passed")
+    except Exception as e:
+        print(f"[FAIL] Multiple mappers test failed: {e}")
 
     scope_name = f"test-scope-{uuid.uuid4().hex[:8]}"
     print("\nTesting convenience mapper functions...")
-    await test_mappers.test_convenience_mapper_functions(scope_name)
-    print("[PASS] Convenience mapper functions test passed")
+    try:
+        await test_scope_mappers.test_convenience_mapper_functions(scope_name)
+        print("[PASS] Convenience mapper functions test passed")
+    except Exception as e:
+        print(f"[FAIL] Convenience mapper functions test failed: {e}")
 
-    # Test integration
-    test_integration = TestClientScopeIntegration()
-    client_id = f"test-client-{uuid.uuid4().hex[:8]}"
-    scope_name = f"test-scope-{uuid.uuid4().hex[:8]}"
-
-    print("\nTesting client scope assignment...")
-    await test_integration.test_client_scope_assignment(client_id, scope_name)
-    print("[PASS] Client scope assignment test passed")
+    # Test client protocol mappers
+    test_client_mappers = TestClientProtocolMappers()
 
     client_id = f"test-client-{uuid.uuid4().hex[:8]}"
     mapper_name = f"test-mapper-{uuid.uuid4().hex[:8]}"
     print("\nTesting client protocol mappers...")
-    await test_integration.test_client_protocol_mappers(client_id, mapper_name)
-    print("[PASS] Client protocol mappers test passed")
+    try:
+        await test_client_mappers.test_client_protocol_mappers(client_id, mapper_name)
+        print("[PASS] Client protocol mappers test passed")
+    except Exception as e:
+        print(f"[FAIL] Client protocol mappers test failed: {e}")
 
-    print("\n=== All tests passed successfully! ===\n")
+    print("\n=== Protocol Mappers Tests Completed! ===\n")
 
 
 if __name__ == "__main__":

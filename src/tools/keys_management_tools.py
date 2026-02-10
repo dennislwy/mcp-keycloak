@@ -750,8 +750,6 @@ async def get_signing_algorithms(realm: Optional[str] = None) -> Dict[str, Any]:
     }
 
 
-
-
 @mcp.tool()
 async def export_realm_certificate(realm: Optional[str] = None) -> Dict[str, Any]:
     """
