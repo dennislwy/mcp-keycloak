@@ -172,7 +172,7 @@ Hierarchical user organization and role mappings:
 ### Realm Administration
 System-wide configuration and operations:
 - `get_accessible_realms` / `list_realms` - List accessible realms
-- `get_realm_info` / `update_realm_settings` - Realm configuration (includes `organizations_enabled` parameter)
+- `get_realm_info` / `update_realm_settings` - Realm configuration
 - `check_organizations_enabled` - Check if organizations feature is enabled
 - `enable_organizations` / `disable_organizations` - Toggle organizations feature (Keycloak 24+)
 - `get_realm_events_config` / `update_realm_events_config` - Event management
