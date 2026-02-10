@@ -19,8 +19,8 @@ class KeycloakClient:
         self._client = None
 
     async def _ensure_client(self):
-        """Ensure httpx async client exists"""
-        if self._client is None:
+        """Ensure httpx async client exists and is usable"""
+        if self._client is None or self._client.is_closed:
             self._client = httpx.AsyncClient(timeout=DEFAULT_REQUEST_TIMEOUT)
         return self._client
 

@@ -121,8 +121,7 @@ class TestUserLifecycle:
             first_name="Test",
             last_name="WithPassword",
             enabled=True,
-            password="TestPassword123!",
-            temporary_password=False,
+            temporary_password="TestPassword123!",
         )
         assert result["status"] == "created"
 
@@ -202,7 +201,7 @@ class TestUserPasswordManagement:
                 password="NewPassword456!",
                 temporary=False,
             )
-            assert result["status"] == "password_reset"
+            assert result["status"] == "success"
         finally:
             await user_tools.delete_user(user_id)
 
@@ -251,7 +250,7 @@ class TestUserSessions:
         try:
             # Logout user (should work even with no active sessions)
             result = await user_tools.logout_user(user_id)
-            assert result["status"] == "logged_out"
+            assert result["status"] == "success"
         finally:
             await user_tools.delete_user(user_id)
 

@@ -5,10 +5,10 @@ import pytest
 import sys
 import os
 
-# Add src to path for imports
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "src"))
+# Add parent dir to path for imports
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from tools.keycloak_client import KeycloakClient
+from src.tools.keycloak_client import KeycloakClient
 
 
 @pytest.fixture
