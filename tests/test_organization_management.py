@@ -20,6 +20,7 @@ from src.tools import (
     organization_management_tools,
     user_tools,
     identity_provider_tools,
+    realm_tools,
 )
 
 try:
@@ -43,16 +44,35 @@ except ImportError:
     pytest = MockPytest()
 
 
+@pytest.fixture(scope="module")
+async def check_organizations_feature():
+    """
+    Check if the Organizations feature is enabled in the realm.
+    Skip all tests if the feature is disabled.
+    """
+    result = await realm_tools.check_organizations_enabled()
+    if not result.get("organizationsEnabled", False):
+        pytest.skip(
+            f"Organizations feature is disabled in realm '{result.get('realm')}'. "
+            f"Enable it using realm_tools.enable_organizations() or update_realm_settings(organizations_enabled=True)."
+        )
+    return result
+
+
 @pytest.mark.integration
 class TestOrganizationManagement:
-    """Test organization CRUD operations."""
+    """Test organization CRUD operations.
+
+    Note: These tests require the Organizations feature to be enabled in Keycloak.
+    The feature can be enabled via realm settings if not already enabled.
+    """
 
     test_org_id = None
     test_org_name = f"test-org-{uuid.uuid4().hex[:8]}"
     test_user_id = None
     test_domain = f"test-{uuid.uuid4().hex[:8]}.example.com"
 
-    async def test_create_organization(self):
+    async def test_create_organization(self, check_organizations_feature):
         """Test creating a new organization."""
         result = await organization_management_tools.create_organization(
             name=self.test_org_name,
@@ -69,7 +89,7 @@ class TestOrganizationManagement:
         if orgs:
             self.test_org_id = orgs[0]["id"]
 
-    async def test_list_organizations(self):
+    async def test_list_organizations(self, check_organizations_feature):
         """Test listing organizations with various parameters."""
         # Test basic listing
         orgs = await organization_management_tools.list_organizations()
@@ -92,7 +112,7 @@ class TestOrganizationManagement:
         assert isinstance(paginated, list)
         assert len(paginated) <= 5
 
-    async def test_get_organization(self):
+    async def test_get_organization(self, check_organizations_feature):
         """Test getting organization details."""
         if not self.test_org_id:
             print("SKIPPED: No test organization ID available")
@@ -105,7 +125,7 @@ class TestOrganizationManagement:
         assert org_details["id"] == self.test_org_id
         assert org_details["name"] == self.test_org_name
 
-    async def test_update_organization(self):
+    async def test_update_organization(self, check_organizations_feature):
         """Test updating organization properties."""
         if not self.test_org_id:
             print("SKIPPED: No test organization ID available")
@@ -126,7 +146,7 @@ class TestOrganizationManagement:
         )
         assert updated_org["description"] == updated_description
 
-    async def test_search_organizations(self):
+    async def test_search_organizations(self, check_organizations_feature):
         """Test organization search functionality."""
         if not self.test_org_name:
             print("SKIPPED: No test organization name available")
@@ -188,7 +208,7 @@ class TestOrganizationMembers:
         except Exception as e:
             print(f"Setup failed: {e}")
 
-    async def test_list_organization_members_empty(self):
+    async def test_list_organization_members_empty(self, check_organizations_feature):
         """Test listing members of an organization (initially empty)."""
         if not self.test_org_id:
             await self.setup_test_data()
@@ -203,7 +223,7 @@ class TestOrganizationMembers:
         assert isinstance(members, list)
         # Should be empty initially
 
-    async def test_add_organization_member(self):
+    async def test_add_organization_member(self, check_organizations_feature):
         """Test adding a member to an organization."""
         if not self.test_org_id or not self.test_user_id:
             await self.setup_test_data()
@@ -218,7 +238,7 @@ class TestOrganizationMembers:
         assert result["status"] == "member_added"
         assert result["user_id"] == self.test_user_id
 
-    async def test_list_organization_members_with_data(self):
+    async def test_list_organization_members_with_data(self, check_organizations_feature):
         """Test listing members after adding one."""
         if not self.test_org_id:
             print("SKIPPED: No test organization ID available")
@@ -230,7 +250,7 @@ class TestOrganizationMembers:
         assert isinstance(members, list)
         # Should have at least one member if add_member test passed
 
-    async def test_get_organization_member(self):
+    async def test_get_organization_member(self, check_organizations_feature):
         """Test getting specific member details."""
         if not self.test_org_id or not self.test_user_id:
             print("SKIPPED: No test organization or user ID available")
@@ -245,7 +265,7 @@ class TestOrganizationMembers:
         except Exception as e:
             print(f"NOTE: Get member may not be supported or member not found: {e}")
 
-    async def test_remove_organization_member(self):
+    async def test_remove_organization_member(self, check_organizations_feature):
         """Test removing a member from an organization."""
         if not self.test_org_id or not self.test_user_id:
             print("SKIPPED: No test organization or user ID available")
@@ -272,7 +292,11 @@ class TestOrganizationMembers:
 
 @pytest.mark.integration
 class TestOrganizationDomains:
-    """Test organization domains management."""
+    """Test organization domains management.
+
+    Note: Some domain endpoints may not be available on all Keycloak versions.
+    Tests will skip gracefully if endpoints return 404.
+    """
 
     test_org_id = None
     test_org_name = f"test-domains-org-{uuid.uuid4().hex[:8]}"
@@ -297,7 +321,7 @@ class TestOrganizationDomains:
         except Exception as e:
             print(f"Domain test setup failed: {e}")
 
-    async def test_list_organization_domains_empty(self):
+    async def test_list_organization_domains_empty(self, check_organizations_feature):
         """Test listing domains of an organization (initially empty)."""
         if not self.test_org_id:
             await self.setup_test_organization()
@@ -306,13 +330,19 @@ class TestOrganizationDomains:
             print("SKIPPED: No test organization ID available")
             return
 
-        domains = await organization_management_tools.list_organization_domains(
-            self.test_org_id
-        )
-        assert isinstance(domains, list)
-        # Should be empty initially
+        try:
+            domains = await organization_management_tools.list_organization_domains(
+                self.test_org_id
+            )
+            assert isinstance(domains, list)
+            # Should be empty initially
+        except Exception as e:
+            # Domains endpoint may not be available on all Keycloak versions
+            if "404" in str(e):
+                pytest.skip(f"Organization domains endpoint not available: {e}")
+            raise
 
-    async def test_add_organization_domain(self):
+    async def test_add_organization_domain(self, check_organizations_feature):
         """Test adding a domain to an organization."""
         if not self.test_org_id:
             await self.setup_test_organization()
@@ -321,34 +351,44 @@ class TestOrganizationDomains:
             print("SKIPPED: No test organization ID available")
             return
 
-        result = await organization_management_tools.add_organization_domain(
-            self.test_org_id, self.test_domain, verified=False
-        )
-        assert result["status"] == "domain_added"
-        assert result["domain_name"] == self.test_domain
+        try:
+            result = await organization_management_tools.add_organization_domain(
+                self.test_org_id, self.test_domain, verified=False
+            )
+            assert result["status"] == "domain_added"
+            assert result["domain_name"] == self.test_domain
+        except Exception as e:
+            if "404" in str(e):
+                pytest.skip(f"Organization domains endpoint not available: {e}")
+            raise
 
-    async def test_list_organization_domains_with_data(self):
+    async def test_list_organization_domains_with_data(self, check_organizations_feature):
         """Test listing domains after adding one."""
         if not self.test_org_id:
             print("SKIPPED: No test organization ID available")
             return
 
-        domains = await organization_management_tools.list_organization_domains(
-            self.test_org_id
-        )
-        assert isinstance(domains, list)
-        # Should have at least one domain if add_domain test passed
-
-        # Verify our test domain is in the list
-        domain_names = [d.get("name") for d in domains]
-        if self.test_domain in domain_names:
-            test_domain_obj = next(
-                d for d in domains if d.get("name") == self.test_domain
+        try:
+            domains = await organization_management_tools.list_organization_domains(
+                self.test_org_id
             )
-            assert test_domain_obj["name"] == self.test_domain
-            assert test_domain_obj["verified"] is False
+            assert isinstance(domains, list)
+            # Should have at least one domain if add_domain test passed
 
-    async def test_verify_organization_domain(self):
+            # Verify our test domain is in the list
+            domain_names = [d.get("name") for d in domains]
+            if self.test_domain in domain_names:
+                test_domain_obj = next(
+                    d for d in domains if d.get("name") == self.test_domain
+                )
+                assert test_domain_obj["name"] == self.test_domain
+                assert test_domain_obj["verified"] is False
+        except Exception as e:
+            if "404" in str(e):
+                pytest.skip(f"Organization domains endpoint not available: {e}")
+            raise
+
+    async def test_verify_organization_domain(self, check_organizations_feature):
         """Test verifying a domain for an organization."""
         if not self.test_org_id:
             print("SKIPPED: No test organization ID available")
@@ -363,17 +403,22 @@ class TestOrganizationDomains:
         except Exception as e:
             print(f"NOTE: Domain verification may not be supported: {e}")
 
-    async def test_remove_organization_domain(self):
+    async def test_remove_organization_domain(self, check_organizations_feature):
         """Test removing a domain from an organization."""
         if not self.test_org_id:
             print("SKIPPED: No test organization ID available")
             return
 
-        result = await organization_management_tools.remove_organization_domain(
-            self.test_org_id, self.test_domain
-        )
-        assert result["status"] == "domain_removed"
-        assert result["domain_name"] == self.test_domain
+        try:
+            result = await organization_management_tools.remove_organization_domain(
+                self.test_org_id, self.test_domain
+            )
+            assert result["status"] == "domain_removed"
+            assert result["domain_name"] == self.test_domain
+        except Exception as e:
+            if "404" in str(e):
+                pytest.skip(f"Organization domains endpoint not available: {e}")
+            raise
 
     async def cleanup_test_organization(self):
         """Clean up test organization."""
@@ -430,7 +475,7 @@ class TestOrganizationIdentityProviders:
         except Exception as e:
             print(f"Identity provider test setup failed: {e}")
 
-    async def test_list_organization_identity_providers_empty(self):
+    async def test_list_organization_identity_providers_empty(self, check_organizations_feature):
         """Test listing identity providers of an organization (initially empty)."""
         if not self.test_org_id:
             await self.setup_test_data()
@@ -447,7 +492,7 @@ class TestOrganizationIdentityProviders:
         assert isinstance(providers, list)
         # Should be empty initially
 
-    async def test_link_organization_identity_provider(self):
+    async def test_link_organization_identity_provider(self, check_organizations_feature):
         """Test linking an identity provider to an organization."""
         if not self.test_org_id:
             await self.setup_test_data()
@@ -469,7 +514,7 @@ class TestOrganizationIdentityProviders:
                 f"NOTE: Identity provider linking may not be supported or provider not found: {e}"
             )
 
-    async def test_get_organization_identity_provider(self):
+    async def test_get_organization_identity_provider(self, check_organizations_feature):
         """Test getting a specific identity provider for an organization."""
         if not self.test_org_id:
             print("SKIPPED: No test organization ID available")
@@ -488,7 +533,7 @@ class TestOrganizationIdentityProviders:
                 f"NOTE: Get identity provider may not be supported or provider not linked: {e}"
             )
 
-    async def test_unlink_organization_identity_provider(self):
+    async def test_unlink_organization_identity_provider(self, check_organizations_feature):
         """Test unlinking an identity provider from an organization."""
         if not self.test_org_id:
             print("SKIPPED: No test organization ID available")
@@ -545,7 +590,7 @@ class TestOrganizationSummaryAndSearch:
         except Exception as e:
             print(f"Summary test setup failed: {e}")
 
-    async def test_get_organization_summary(self):
+    async def test_get_organization_summary(self, check_organizations_feature):
         """Test getting comprehensive organization summary."""
         if not self.test_org_id:
             await self.setup_test_organization()

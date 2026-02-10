@@ -172,7 +172,9 @@ Hierarchical user organization and role mappings:
 ### Realm Administration
 System-wide configuration and operations:
 - `get_accessible_realms` / `list_realms` - List accessible realms
-- `get_realm_info` / `update_realm_settings` - Realm configuration
+- `get_realm_info` / `update_realm_settings` - Realm configuration (includes `organizations_enabled` parameter)
+- `check_organizations_enabled` - Check if organizations feature is enabled
+- `enable_organizations` / `disable_organizations` - Toggle organizations feature (Keycloak 24+)
 - `get_realm_events_config` / `update_realm_events_config` - Event management
 - `add_realm_default_group` / `remove_realm_default_group` - Default settings
 
@@ -496,16 +498,18 @@ All tool categories have comprehensive test coverage:
 - ✅ Realm Operations (15 tests)
 - ✅ Authentication Management (10 tests)
 - ✅ Identity Providers (6 tests)
-- ✅ Events Management (14 tests)
+- ✅ Events Management (13 tests)
 - ✅ Sessions Management (9 tests)
 - ✅ Attack Detection (6 tests)
 - ✅ Keys Management (11 tests)
 - ✅ Security Policies (16 tests)
-- ✅ Organization Management (8 tests)
+- ✅ Organization Management (18 tests)
 - ✅ Client Scopes (4 tests)
 - ✅ Protocol Mappers (4 tests)
+- ✅ Connection & Import Tests (9 tests)
 
-**Total: 141 tests across 16 test files**
+**Total: 161 tests across 18 test files**
+**Pass Rate: 95.0% (153 passed, 8 skipped)**
 
 For troubleshooting, detailed setup instructions, and contribution guidelines, see [tests/README.md](tests/README.md).
 

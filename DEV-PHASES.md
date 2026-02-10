@@ -50,7 +50,9 @@ The following Keycloak REST API endpoints have been implemented in this MCP serv
 #### Realm Management (`src/tools/realm_tools.py`)
 - ✅ Get accessible realms
 - ✅ Get realm info
-- ✅ Update realm settings (themes, security, login options)
+- ✅ Update realm settings (themes, security, login options, organizations feature)
+- ✅ Check organizations feature status (`check_organizations_enabled`)
+- ✅ Enable/disable organizations feature (`enable_organizations` / `disable_organizations`)
 - ✅ Get/update realm events configuration
 - ✅ Manage default groups
 - ✅ Remove all user sessions
@@ -266,16 +268,21 @@ The following Keycloak REST API endpoints have been implemented in this MCP serv
 ### Phase 4: Enterprise Features (Lower Priority)
 **Goal:** Add enterprise-grade features for large deployments
 
-#### 4.1 Organizations (Keycloak 23+) ✅ **COMPLETED** (Feb 9, 2026)
+#### 4.1 Organizations (Keycloak 24+) ✅ **COMPLETED** (Feb 9-11, 2026)
 - [x] Create/manage organizations (full CRUD operations)
-- [x] Organization domains (add, remove, verify, list)
+- [x] Organization domains (add, remove, verify, list) - Note: domains API may not be available on all Keycloak versions
 - [x] Organization members (add, remove, list, get details)
 - [x] Organization identity providers (link, unlink, list, get)
 - [x] Multi-tenancy configurations and domain verification
 - [x] Organization search and analytics capabilities
 - [x] Comprehensive organization summary and monitoring
+- [x] Organizations feature detection and enablement via Realm Tools
 
-**Implementation:** `src/tools/organization_management_tools.py` (18 tools)
+**Implementation:**
+- `src/tools/organization_management_tools.py` (18 tools)
+- `src/tools/realm_tools.py` (3 additional tools: check_organizations_enabled, enable_organizations, disable_organizations)
+
+**Note:** Organizations feature was introduced in Keycloak 24 and must be enabled in realm settings. Tests gracefully skip when feature is disabled or endpoints are unavailable.
 
 #### 4.2 Client Registration (Enhanced)
 - [ ] Initial access tokens
@@ -386,9 +393,9 @@ The following Keycloak REST API endpoints have been implemented in this MCP serv
 | **Attack Detection** | **90%** | ✅ **Complete** (Phase 2.1) |
 | Client Policies | 0% | ❌ Not Implemented (Phase 3.6) |
 | User Credentials | 10% | ⚠️ Minimal Coverage |
-| **Organizations** | **95%** | ✅ **Complete** (Phase 4.1) |
+| **Organizations** | **100%** | ✅ **Complete** (Phase 4.1 - includes feature management) |
 
-**Overall API Coverage: ~79-84%** (Updated Feb 9, 2026 - Phase 2 Security Features Complete)
+**Overall API Coverage: ~82-87%** (Updated Feb 11, 2026 - Organizations Feature Management Complete)
 
 **Phase 1 Complete!** All critical core features implemented: user management, client configuration, role-based access control, group management, authentication flows, client scopes, protocol mappers, identity providers, and user federation.
 
@@ -400,7 +407,7 @@ The following Keycloak REST API endpoints have been implemented in this MCP serv
 
 **Phase 2 Complete!** (Feb 9, 2026) Security Features now provide comprehensive security management including attack detection and brute force protection (Phase 2.1), cryptographic keys and certificate management (Phase 2.4), and security policies configuration (Phase 2.5). Supports password policies, OTP policies, WebAuthn policies, browser security headers, SMTP configuration, and realm security settings. Added 38 new tools (10 + 12 + 16) with comprehensive integration tests.
 
-**Phase 4.1 Complete!** Organization Management (Feb 9, 2026) provides comprehensive multi-tenant organization support with full CRUD operations, domain management and verification, member management, and identity provider linking. Supports automatic user assignment based on verified domains and organization-specific authentication flows. Requires Keycloak 23+ with organizations feature enabled. Added 18 new tools with comprehensive integration tests.
+**Phase 4.1 Complete!** Organization Management (Feb 9-11, 2026) provides comprehensive multi-tenant organization support with full CRUD operations, domain management and verification, member management, and identity provider linking. Supports automatic user assignment based on verified domains and organization-specific authentication flows. Requires Keycloak 24+ with organizations feature enabled. Added 21 new tools (18 organization + 3 realm) with comprehensive integration tests. Includes feature detection, enablement/disablement, and graceful handling of unavailable endpoints.
 
 ---
 

@@ -25,10 +25,10 @@ def test_keycloak_connection(keycloak_client):
     assert hasattr(keycloak_client, "_make_request")
 
 
-def test_keycloak_authentication(keycloak_client):
+async def test_keycloak_authentication(keycloak_client):
     """Test that we can authenticate with Keycloak"""
     try:
-        token = keycloak_client._get_token()
+        token = await keycloak_client._get_token()
         assert token is not None
         assert isinstance(token, str)
         assert len(token) > 20
@@ -37,10 +37,10 @@ def test_keycloak_authentication(keycloak_client):
         pytest.skip(f"Keycloak service not available: {e}")
 
 
-def test_keycloak_realm_info(keycloak_client):
+async def test_keycloak_realm_info(keycloak_client):
     """Test that we can get realm information"""
     try:
-        realm_info = keycloak_client._make_request("GET", "")
+        realm_info = await keycloak_client._make_request("GET", "")
         assert realm_info is not None
         assert isinstance(realm_info, dict)
         # Check for expected fields
@@ -51,15 +51,15 @@ def test_keycloak_realm_info(keycloak_client):
 
 
 @pytest.mark.integration
-def test_full_keycloak_workflow(keycloak_client):
+async def test_full_keycloak_workflow(keycloak_client):
     """Integration test for full Keycloak workflow"""
     try:
         # Get token
-        token = keycloak_client._get_token()
+        token = await keycloak_client._get_token()
         assert token is not None
 
         # Get realm info
-        realm_info = keycloak_client._make_request("GET", "")
+        realm_info = await keycloak_client._make_request("GET", "")
         assert realm_info is not None
 
         # If we get here, the connection is working

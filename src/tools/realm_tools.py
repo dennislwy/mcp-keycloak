@@ -58,6 +58,7 @@ async def update_realm_settings(
     max_delta_time_seconds: Optional[int] = None,
     failure_factor: Optional[int] = None,
     default_locale: Optional[str] = None,
+    organizations_enabled: Optional[bool] = None,
     realm: Optional[str] = None,
 ) -> Dict[str, str]:
     """
@@ -88,6 +89,7 @@ async def update_realm_settings(
         max_delta_time_seconds: Max time between failures
         failure_factor: Failure factor
         default_locale: Default locale
+        organizations_enabled: Enable/disable organizations feature (Keycloak 24+)
         realm: Target realm (uses default if not specified)
 
     Returns:
@@ -145,12 +147,80 @@ async def update_realm_settings(
         current_realm["failureFactor"] = failure_factor
     if default_locale is not None:
         current_realm["defaultLocale"] = default_locale
+    if organizations_enabled is not None:
+        current_realm["organizationsEnabled"] = organizations_enabled
 
     await client._make_request("PUT", "", data=current_realm, realm=realm)
     return {
         "status": "updated",
         "message": f"Realm {realm if realm else client.realm_name} settings updated successfully",
     }
+
+
+@mcp.tool()
+async def check_organizations_enabled(realm: Optional[str] = None) -> Dict[str, Any]:
+    """
+    Check if the Organizations feature is enabled in the realm.
+
+    The Organizations feature was introduced in Keycloak 24 and allows grouping
+    users and managing organization-level access control.
+
+    Args:
+        realm: Target realm (uses default if not specified)
+
+    Returns:
+        Dictionary with organizations_enabled status and additional info
+    """
+    realm_data = await client._make_request("GET", "", realm=realm)
+
+    organizations_enabled = realm_data.get("organizationsEnabled", False)
+    keycloak_version = realm_data.get("keycloakVersion", "unknown")
+
+    return {
+        "realm": realm if realm else client.realm_name,
+        "organizationsEnabled": organizations_enabled,
+        "keycloakVersion": keycloak_version,
+        "status": "enabled" if organizations_enabled else "disabled",
+        "message": f"Organizations feature is {'enabled' if organizations_enabled else 'disabled'} in realm {realm if realm else client.realm_name}",
+    }
+
+
+@mcp.tool()
+async def enable_organizations(realm: Optional[str] = None) -> Dict[str, str]:
+    """
+    Enable the Organizations feature in the realm.
+
+    This is a convenience function that enables the Organizations feature
+    which was introduced in Keycloak 24. The feature allows creating and
+    managing organizations with members, domains, and identity providers.
+
+    Note: If your Keycloak version is below 24, this feature may not be available.
+
+    Args:
+        realm: Target realm (uses default if not specified)
+
+    Returns:
+        Status message
+    """
+    return await update_realm_settings(organizations_enabled=True, realm=realm)
+
+
+@mcp.tool()
+async def disable_organizations(realm: Optional[str] = None) -> Dict[str, str]:
+    """
+    Disable the Organizations feature in the realm.
+
+    This is a convenience function that disables the Organizations feature.
+    Note that disabling organizations does not delete existing organization data,
+    but it will make the Organizations API endpoints unavailable.
+
+    Args:
+        realm: Target realm (uses default if not specified)
+
+    Returns:
+        Status message
+    """
+    return await update_realm_settings(organizations_enabled=False, realm=realm)
 
 
 @mcp.tool()
