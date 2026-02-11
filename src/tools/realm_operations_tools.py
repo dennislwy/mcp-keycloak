@@ -44,7 +44,7 @@ async def create_realm(
     if realm_config:
         realm_data.update(realm_config)
 
-    await client._make_request("POST", "/", data=realm_data, skip_realm=True)
+    await client._make_request("POST", "/realms", data=realm_data, skip_realm=True)
 
     return {
         "status": "created",
@@ -78,7 +78,7 @@ async def delete_realm(
             "warning": "This operation permanently deletes ALL realm data and cannot be undone.",
         }
 
-    await client._make_request("DELETE", "/", realm=realm_name)
+    await client._make_request("DELETE", f"/realms/{realm_name}", skip_realm=True)
 
     return {
         "status": "deleted",
@@ -108,7 +108,7 @@ async def import_realm(
     realm_name = realm_data.get("realm", "unknown")
 
     try:
-        await client._make_request("POST", "/", data=realm_data, skip_realm=True)
+        await client._make_request("POST", "/realms", data=realm_data, skip_realm=True)
 
         return {
             "status": "imported",
@@ -223,7 +223,7 @@ async def list_realms(
     """
     params = {"briefRepresentation": brief} if brief else {}
 
-    return await client._make_request("GET", "/", params=params, skip_realm=True)
+    return await client._make_request("GET", "/realms", params=params, skip_realm=True)
 
 
 @mcp.tool()
@@ -260,10 +260,28 @@ async def duplicate_realm(
         source_data.pop("users", None)
         source_data.pop("federatedUsers", None)
 
-    # Remove sensitive data that shouldn't be copied
+    # Remove sensitive data and system-generated items that shouldn't be copied
     sensitive_keys = ["keycloakVersion", "adminPermissionsEnabled"]
     for key in sensitive_keys:
         source_data.pop(key, None)
+
+    # Remove default clients that Keycloak auto-creates to avoid conflicts
+    default_clients = {
+        "admin-cli",
+        "account",
+        "account-console",
+        "broker",
+        "realm-management",
+        "security-admin-console",
+    }
+    if "clients" in source_data:
+        source_data["clients"] = [
+            c for c in source_data["clients"] if c.get("clientId") not in default_clients
+        ]
+
+    # Remove defaultRole to let Keycloak auto-generate it for the new realm
+    # (the role name contains the source realm name which causes conflicts)
+    source_data.pop("defaultRole", None)
 
     # Import as new realm
     await import_realm(source_data)

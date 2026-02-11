@@ -78,7 +78,10 @@ class TestRealmOperations:
             assert "master" in realm_names
         except httpx.HTTPStatusError as e:
             if e.response.status_code in (302, 405, 403):
-                pytest.skip(f"Realm listing not permitted on this server: {e.response.status_code}")
+                pytest.skip(
+                    f"Realm listing not permitted (HTTP {e.response.status_code}). "
+                    "Ensure your user has the 'admin' Realm Role assigned in the master realm."
+                )
 
     async def test_export_realm(self):
         """Test exporting realm configuration."""
@@ -113,7 +116,10 @@ class TestRealmOperations:
             assert "status" in restore_result or "realm" in restore_result
         except httpx.HTTPStatusError as e:
             if e.response.status_code in (405, 403):
-                pytest.skip(f"Realm restore not permitted on this server: {e.response.status_code}")
+                pytest.skip(
+                    f"Realm restore not permitted (HTTP {e.response.status_code}). "
+                    "Ensure your user has the 'admin' Realm Role assigned in the master realm."
+                )
             raise
 
     async def test_realm_lifecycle(self):
@@ -142,7 +148,8 @@ class TestRealmOperations:
         except httpx.HTTPStatusError as e:
             if e.response.status_code in (405, 403):
                 pytest.skip(
-                    f"Realm creation not permitted on this server: {e.response.status_code}"
+                    f"Realm creation not permitted (HTTP {e.response.status_code}). "
+                    "Ensure your user has the 'admin' Realm Role assigned in the master realm."
                 )
             raise
         finally:
@@ -191,7 +198,10 @@ class TestRealmOperations:
 
         except httpx.HTTPStatusError as e:
             if e.response.status_code in (405, 403):
-                pytest.skip(f"Realm import not permitted on this server: {e.response.status_code}")
+                pytest.skip(
+                    f"Realm import not permitted (HTTP {e.response.status_code}). "
+                    "Ensure your user has the 'admin' Realm Role assigned in the master realm."
+                )
             raise
         finally:
             # Clean up
@@ -235,9 +245,8 @@ class TestRealmOperations:
 
             # Perform partial import
             result = await realm_operations_tools.partial_import_realm(
+                import_data=partial_data,
                 realm=test_realm_name,
-                realm_data=partial_data,
-                if_resource_exists="SKIP",
             )
             assert isinstance(result, dict)
             assert "status" in result or "results" in result or "added" in result
@@ -245,7 +254,8 @@ class TestRealmOperations:
         except httpx.HTTPStatusError as e:
             if e.response.status_code in (405, 403):
                 pytest.skip(
-                    f"Realm creation/import not permitted on this server: {e.response.status_code}"
+                    f"Realm creation/import not permitted (HTTP {e.response.status_code}). "
+                    "Ensure your user has the 'admin' Realm Role assigned in the master realm."
                 )
             raise
         finally:
@@ -260,6 +270,16 @@ class TestRealmOperations:
         source_realm_name = f"test-source-{uuid.uuid4().hex[:8]}"
         target_realm_name = f"test-target-{uuid.uuid4().hex[:8]}"
 
+        # Clean up any leftover realms from previous failed runs
+        try:
+            await realm_operations_tools.delete_realm(source_realm_name, confirm=True)
+        except Exception:
+            pass
+        try:
+            await realm_operations_tools.delete_realm(target_realm_name, confirm=True)
+        except Exception:
+            pass
+
         try:
             # Create source realm with some configuration
             await realm_operations_tools.create_realm(
@@ -271,11 +291,10 @@ class TestRealmOperations:
             # Duplicate the realm
             result = await realm_operations_tools.duplicate_realm(
                 source_realm=source_realm_name,
-                new_realm_name=target_realm_name,
-                new_display_name="Duplicated Target Realm",
+                target_realm_name=target_realm_name,
             )
             assert result["status"] == "duplicated"
-            assert result["new_realm"] == target_realm_name
+            assert result["target_realm"] == target_realm_name
 
             # Verify both realms exist
             realms = await realm_operations_tools.list_realms()
@@ -283,14 +302,15 @@ class TestRealmOperations:
             assert source_realm_name in realm_names
             assert target_realm_name in realm_names
 
-            # Verify target realm has expected display name
+            # Verify target realm has expected display name (with Copy suffix)
             target_export = await realm_operations_tools.export_realm(realm=target_realm_name)
-            assert target_export["displayName"] == "Duplicated Target Realm"
+            assert target_export["displayName"] == "Source Realm for Duplication (Copy)"
 
         except httpx.HTTPStatusError as e:
             if e.response.status_code in (405, 403):
                 pytest.skip(
-                    f"Realm creation/duplication not permitted on this server: {e.response.status_code}"
+                    f"Realm creation/duplication not permitted (HTTP {e.response.status_code}). "
+                    "Ensure your user has the 'admin' Realm Role assigned in the master realm."
                 )
             raise
         finally:
