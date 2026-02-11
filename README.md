@@ -13,7 +13,7 @@ The Keycloak MCP Server bridges the gap between AI applications and Keycloak's p
 ## Features
 
 ### 🔐 Comprehensive User Management
-Manage users lifecycle from creation to deletion, including password resets, session management, and user attribute updates.
+Complete user lifecycle management including creation, updates, deletion, password resets, session management, credentials management (list, delete, reorder priority), required actions, user consents, offline sessions, and bulk operations (password reset, attribute updates, required actions).
 
 ### 🏢 Client Configuration
 Create and configure OAuth2/OIDC clients, manage client secrets, and handle service accounts programmatically.
@@ -28,7 +28,7 @@ Configure external identity providers (Google, Facebook, OIDC, SAML), manage att
 Connect external user stores (LDAP, Kerberos), configure user storage providers, and manage attribute mappings for centralized user management.
 
 ### 👥 Role-Based Access Control
-Define and assign realm and client-specific roles, manage user permissions, and implement fine-grained access control.
+Define and assign realm and client-specific roles, create composite roles combining multiple roles, manage role hierarchies, get effective roles including composites, and implement fine-grained access control with mixed realm and client role compositions.
 
 ### 🏛️ Realm Administration
 Configure realm settings, manage default groups, handle event configurations, and control realm-wide policies.
@@ -443,7 +443,7 @@ Integrate Keycloak management into your CI/CD pipelines, allowing automated conf
 
 ## Testing
 
-The project includes a comprehensive test suite with 141 integration tests covering all tool categories. For detailed information, see [tests/README.md](tests/README.md).
+The project includes a comprehensive test suite with 189 integration tests covering all tool categories. For detailed information, see [tests/README.md](tests/README.md).
 
 ### Prerequisites
 
@@ -491,13 +491,15 @@ uv run pytest -m "not integration"
 
 All tool categories have comprehensive test coverage:
 - ✅ User Management (9 tests)
+- ✅ User Credentials & Consents (14 tests)
 - ✅ Client Management (9 tests)
 - ✅ Role Management (5 tests)
+- ✅ Composite Roles (14 tests)
 - ✅ Group Management (7 tests)
 - ✅ Realm Administration (7 tests)
 - ✅ Realm Operations (15 tests)
 - ✅ Authentication Management (10 tests)
-- ✅ Identity Providers (6 tests)
+- ✅ Identity Providers & Federation (6 tests)
 - ✅ Events Management (13 tests)
 - ✅ Sessions Management (9 tests)
 - ✅ Attack Detection (6 tests)
@@ -508,8 +510,8 @@ All tool categories have comprehensive test coverage:
 - ✅ Protocol Mappers (4 tests)
 - ✅ Connection & Import Tests (9 tests)
 
-**Total: 161 tests across 18 test files**
-**Pass Rate: 95.0% (153 passed, 8 skipped)**
+**Total: 189 tests across 20 test files**
+**Pass Rate: 99.0% (187 passed, 2 skipped)**
 
 For troubleshooting, detailed setup instructions, and contribution guidelines, see [tests/README.md](tests/README.md).
 
