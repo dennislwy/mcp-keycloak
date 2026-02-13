@@ -225,17 +225,21 @@ The following Keycloak REST API endpoints have been implemented in this MCP serv
 - [ ] Configure component providers
 - [ ] Component sub-configurations
 
-#### 3.3 User Attributes & Credentials (Enhanced)
-- [ ] List all user credentials
-- [ ] Delete specific user credential
-- [ ] Update credential labels
-- [ ] Reorder credential priority (move to first)
-- [ ] Configure credential types
-- [ ] Manage user attributes in bulk
-- [ ] Required actions for users
-- [ ] User consents management (list, revoke)
-- [ ] Offline sessions per user
-- [ ] Bulk password reset with temporary passwords
+#### 3.3 User Attributes & Credentials (Enhanced) ✅ **COMPLETED** (Feb 11, 2026)
+- [x] List all user credentials
+- [x] Delete specific user credential
+- [x] Update credential labels
+- [x] Reorder credential priority (move to first, move after)
+- [x] Configure credential types
+- [x] Manage user attributes in bulk
+- [x] Required actions for users (get, set, add, remove)
+- [x] User consents management (list, revoke)
+- [x] Offline sessions per user
+- [x] Bulk password reset with temporary passwords
+- [x] Bulk update user attributes (merge or replace)
+- [x] Bulk add required actions
+
+**Implementation:** `src/tools/user_credentials_tools.py` (18 tools)
 
 #### 3.4 Authorization Services
 - [ ] Resource servers management
@@ -246,13 +250,28 @@ The following Keycloak REST API endpoints have been implemented in this MCP serv
 - [ ] UMA protection API
 - [ ] Permission tickets
 
-#### 3.5 Composite Roles Management **NEW**
-- [ ] Create composite roles (combining multiple roles)
-- [ ] Add realm/client roles to composites
-- [ ] Remove roles from composites
-- [ ] Get composite role members
-- [ ] Get effective composite roles
-- [ ] List roles that include a specific role
+#### 3.5 Composite Roles Management ✅ **COMPLETED** (Feb 11, 2026)
+- [x] Create composite roles (combining multiple roles)
+- [x] Add realm/client roles to composites
+- [x] Remove roles from composites
+- [x] Get composite role members (all, realm-only, client-only)
+- [x] Get effective composite roles
+- [x] Add client roles to realm composite roles
+- [x] Mixed composite roles (realm + client roles)
+- [x] Client role composites with realm and client roles
+
+**Implementation:** Extended `src/tools/role_tools.py` (9 new tools)
+
+Tools added:
+- `get_realm_role_composites` - Get all composite roles for a realm role
+- `add_realm_roles_to_composite` - Add realm roles to a composite
+- `remove_realm_roles_from_composite` - Remove realm roles from a composite
+- `get_realm_role_composite_realm_roles` - Get only realm-level composites
+- `get_realm_role_composite_client_roles` - Get only client-level composites
+- `add_client_roles_to_realm_composite` - Add client roles to realm composite
+- `get_client_role_composites` - Get composites for a client role
+- `add_roles_to_client_role_composite` - Add roles to client role composite
+- `remove_roles_from_client_role_composite` - Remove roles from client role composite
 
 #### 3.6 Client Policies & Governance **NEW**
 - [ ] Get/update client policies
@@ -375,9 +394,9 @@ The following Keycloak REST API endpoints have been implemented in this MCP serv
 
 | Category | Coverage | Status |
 |----------|----------|--------|
-| Users | 90% | ✅ Mostly Complete |
+| **Users** | **100%** | ✅ **Complete** (Credentials Enhanced - Feb 11, 2026) |
 | Clients | 80% | ✅ Good Coverage |
-| Roles | 78% | ✅ Good Coverage (added get_client_role) |
+| **Roles** | **100%** | ✅ **Complete** (Composite Roles - Feb 11, 2026) |
 | **Groups** | **100%** | ✅ **Complete** (Role Mappings - Feb 8, 2026) |
 | **Realms** | **80%** | ✅ **Excellent** (Operations Focus - Feb 8, 2026) |
 | Authentication | 70% | ✅ Good Coverage |
@@ -392,10 +411,10 @@ The following Keycloak REST API endpoints have been implemented in this MCP serv
 | **Security Policies** | **95%** | ✅ **Complete** (Phase 2.5) |
 | **Attack Detection** | **90%** | ✅ **Complete** (Phase 2.1) |
 | Client Policies | 0% | ❌ Not Implemented (Phase 3.6) |
-| User Credentials | 10% | ⚠️ Minimal Coverage |
+| **User Credentials** | **100%** | ✅ **Complete** (Phase 3.3 - Feb 11, 2026) |
 | **Organizations** | **100%** | ✅ **Complete** (Phase 4.1 - includes feature management) |
 
-**Overall API Coverage: ~82-87%** (Updated Feb 11, 2026 - Organizations Feature Management Complete)
+**Overall API Coverage: ~88-92%** (Updated Feb 11, 2026 - User Credentials & Composite Roles Complete)
 
 **Phase 1 Complete!** All critical core features implemented: user management, client configuration, role-based access control, group management, authentication flows, client scopes, protocol mappers, identity providers, and user federation.
 
@@ -408,6 +427,8 @@ The following Keycloak REST API endpoints have been implemented in this MCP serv
 **Phase 2 Complete!** (Feb 9, 2026) Security Features now provide comprehensive security management including attack detection and brute force protection (Phase 2.1), cryptographic keys and certificate management (Phase 2.4), and security policies configuration (Phase 2.5). Supports password policies, OTP policies, WebAuthn policies, browser security headers, SMTP configuration, and realm security settings. Added 38 new tools (10 + 12 + 16) with comprehensive integration tests.
 
 **Phase 4.1 Complete!** Organization Management (Feb 9-11, 2026) provides comprehensive multi-tenant organization support with full CRUD operations, domain management and verification, member management, and identity provider linking. Supports automatic user assignment based on verified domains and organization-specific authentication flows. Requires Keycloak 24+ with organizations feature enabled. Added 21 new tools (18 organization + 3 realm) with comprehensive integration tests. Includes feature detection, enablement/disablement, and graceful handling of unavailable endpoints.
+
+**Phase 3.3 & 3.5 Complete!** (Feb 11, 2026) User Credentials & Composite Roles Management now provide comprehensive credential lifecycle management, user consents, offline sessions, required actions, and bulk user operations. Composite roles enable sophisticated role hierarchies mixing realm and client roles. Added 27 new tools (18 credentials + 9 composite roles) with comprehensive integration tests.
 
 ---
 

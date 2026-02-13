@@ -341,3 +341,304 @@ async def assign_client_role_to_user(
         "status": "assigned",
         "message": f"Client roles {role_names} assigned to user {user_id}",
     }
+
+
+# === Composite Roles Management ===
+
+
+@mcp.tool()
+async def get_realm_role_composites(
+    role_name: str, realm: Optional[str] = None
+) -> List[Dict[str, Any]]:
+    """
+    Get composite roles for a realm role.
+
+    Args:
+        role_name: Realm role name
+        realm: Target realm (uses default if not specified)
+
+    Returns:
+        List of roles that are part of this composite role
+    """
+    return await client._make_request(
+        "GET", f"/roles/{role_name}/composites", realm=realm
+    )
+
+
+@mcp.tool()
+async def add_realm_roles_to_composite(
+    composite_role_name: str, role_names: List[str], realm: Optional[str] = None
+) -> Dict[str, str]:
+    """
+    Add realm roles to a composite realm role.
+
+    Args:
+        composite_role_name: Name of the composite role
+        role_names: List of role names to add to the composite
+        realm: Target realm (uses default if not specified)
+
+    Returns:
+        Status message
+    """
+    # Get role representations
+    roles = []
+    for role_name in role_names:
+        role = await client._make_request("GET", f"/roles/{role_name}", realm=realm)
+        roles.append(role)
+
+    await client._make_request(
+        "POST", f"/roles/{composite_role_name}/composites", data=roles, realm=realm
+    )
+    return {
+        "status": "added",
+        "message": f"Roles {role_names} added to composite role {composite_role_name}",
+    }
+
+
+@mcp.tool()
+async def remove_realm_roles_from_composite(
+    composite_role_name: str, role_names: List[str], realm: Optional[str] = None
+) -> Dict[str, str]:
+    """
+    Remove realm roles from a composite realm role.
+
+    Args:
+        composite_role_name: Name of the composite role
+        role_names: List of role names to remove from the composite
+        realm: Target realm (uses default if not specified)
+
+    Returns:
+        Status message
+    """
+    # Get role representations
+    roles = []
+    for role_name in role_names:
+        role = await client._make_request("GET", f"/roles/{role_name}", realm=realm)
+        roles.append(role)
+
+    await client._make_request(
+        "DELETE", f"/roles/{composite_role_name}/composites", data=roles, realm=realm
+    )
+    return {
+        "status": "removed",
+        "message": f"Roles {role_names} removed from composite role {composite_role_name}",
+    }
+
+
+@mcp.tool()
+async def get_realm_role_composite_realm_roles(
+    role_name: str, realm: Optional[str] = None
+) -> List[Dict[str, Any]]:
+    """
+    Get only the realm-level composite roles for a realm role.
+
+    Args:
+        role_name: Realm role name
+        realm: Target realm (uses default if not specified)
+
+    Returns:
+        List of realm roles that are part of this composite
+    """
+    return await client._make_request(
+        "GET", f"/roles/{role_name}/composites/realm", realm=realm
+    )
+
+
+@mcp.tool()
+async def get_realm_role_composite_client_roles(
+    role_name: str, client_id: str, realm: Optional[str] = None
+) -> List[Dict[str, Any]]:
+    """
+    Get client-level composite roles for a realm role.
+
+    Args:
+        role_name: Realm role name
+        client_id: Client database ID
+        realm: Target realm (uses default if not specified)
+
+    Returns:
+        List of client roles that are part of this composite
+    """
+    return await client._make_request(
+        "GET", f"/roles/{role_name}/composites/clients/{client_id}", realm=realm
+    )
+
+
+@mcp.tool()
+async def add_client_roles_to_realm_composite(
+    composite_role_name: str,
+    client_id: str,
+    role_names: List[str],
+    realm: Optional[str] = None,
+) -> Dict[str, str]:
+    """
+    Add client roles to a composite realm role.
+
+    Args:
+        composite_role_name: Name of the composite realm role
+        client_id: Client database ID
+        role_names: List of client role names to add
+        realm: Target realm (uses default if not specified)
+
+    Returns:
+        Status message
+    """
+    # Get client role representations
+    roles = []
+    for role_name in role_names:
+        role = await client._make_request(
+            "GET", f"/clients/{client_id}/roles/{role_name}", realm=realm
+        )
+        roles.append(role)
+
+    await client._make_request(
+        "POST", f"/roles/{composite_role_name}/composites", data=roles, realm=realm
+    )
+    return {
+        "status": "added",
+        "message": f"Client roles {role_names} added to composite role {composite_role_name}",
+    }
+
+
+@mcp.tool()
+async def get_client_role_composites(
+    client_id: str, role_name: str, realm: Optional[str] = None
+) -> List[Dict[str, Any]]:
+    """
+    Get composite roles for a client role.
+
+    Args:
+        client_id: Client database ID
+        role_name: Client role name
+        realm: Target realm (uses default if not specified)
+
+    Returns:
+        List of roles that are part of this composite client role
+    """
+    return await client._make_request(
+        "GET", f"/clients/{client_id}/roles/{role_name}/composites", realm=realm
+    )
+
+
+@mcp.tool()
+async def add_roles_to_client_role_composite(
+    client_id: str,
+    composite_role_name: str,
+    realm_role_names: Optional[List[str]] = None,
+    client_role_names: Optional[List[str]] = None,
+    source_client_id: Optional[str] = None,
+    realm: Optional[str] = None,
+) -> Dict[str, str]:
+    """
+    Add realm or client roles to a composite client role.
+
+    Args:
+        client_id: Client database ID (where the composite role exists)
+        composite_role_name: Name of the composite client role
+        realm_role_names: List of realm role names to add (optional)
+        client_role_names: List of client role names to add (optional)
+        source_client_id: Client ID for client roles (required if client_role_names provided)
+        realm: Target realm (uses default if not specified)
+
+    Returns:
+        Status message
+    """
+    roles = []
+
+    # Add realm roles
+    if realm_role_names:
+        for role_name in realm_role_names:
+            role = await client._make_request("GET", f"/roles/{role_name}", realm=realm)
+            roles.append(role)
+
+    # Add client roles
+    if client_role_names:
+        if not source_client_id:
+            return {
+                "status": "error",
+                "message": "source_client_id required when adding client roles",
+            }
+        for role_name in client_role_names:
+            role = await client._make_request(
+                "GET", f"/clients/{source_client_id}/roles/{role_name}", realm=realm
+            )
+            roles.append(role)
+
+    if not roles:
+        return {
+            "status": "error",
+            "message": "No roles specified to add",
+        }
+
+    await client._make_request(
+        "POST",
+        f"/clients/{client_id}/roles/{composite_role_name}/composites",
+        data=roles,
+        realm=realm,
+    )
+    return {
+        "status": "added",
+        "message": f"Roles added to composite client role {composite_role_name}",
+    }
+
+
+@mcp.tool()
+async def remove_roles_from_client_role_composite(
+    client_id: str,
+    composite_role_name: str,
+    realm_role_names: Optional[List[str]] = None,
+    client_role_names: Optional[List[str]] = None,
+    source_client_id: Optional[str] = None,
+    realm: Optional[str] = None,
+) -> Dict[str, str]:
+    """
+    Remove realm or client roles from a composite client role.
+
+    Args:
+        client_id: Client database ID (where the composite role exists)
+        composite_role_name: Name of the composite client role
+        realm_role_names: List of realm role names to remove (optional)
+        client_role_names: List of client role names to remove (optional)
+        source_client_id: Client ID for client roles (required if client_role_names provided)
+        realm: Target realm (uses default if not specified)
+
+    Returns:
+        Status message
+    """
+    roles = []
+
+    # Add realm roles
+    if realm_role_names:
+        for role_name in realm_role_names:
+            role = await client._make_request("GET", f"/roles/{role_name}", realm=realm)
+            roles.append(role)
+
+    # Add client roles
+    if client_role_names:
+        if not source_client_id:
+            return {
+                "status": "error",
+                "message": "source_client_id required when removing client roles",
+            }
+        for role_name in client_role_names:
+            role = await client._make_request(
+                "GET", f"/clients/{source_client_id}/roles/{role_name}", realm=realm
+            )
+            roles.append(role)
+
+    if not roles:
+        return {
+            "status": "error",
+            "message": "No roles specified to remove",
+        }
+
+    await client._make_request(
+        "DELETE",
+        f"/clients/{client_id}/roles/{composite_role_name}/composites",
+        data=roles,
+        realm=realm,
+    )
+    return {
+        "status": "removed",
+        "message": f"Roles removed from composite client role {composite_role_name}",
+    }

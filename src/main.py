@@ -33,6 +33,7 @@ from .tools import organization_management_tools  # noqa: F401
 from .tools import attack_detection_tools  # noqa: F401
 from .tools import keys_management_tools  # noqa: F401
 from .tools import security_policies_tools  # noqa: F401
+from .tools import user_credentials_tools  # noqa: F401
 
 # Configure logging
 logging.basicConfig(
