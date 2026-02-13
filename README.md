@@ -90,6 +90,36 @@ OAuth2/OIDC client configuration:
 - `get_client_secret` / `regenerate_client_secret` - Secret management
 - `get_client_service_account` - Service account access
 - `update_client` / `delete_client` - Client modifications
+- `list_client_default_client_scopes` / `update_client_default_client_scope` / `delete_client_default_client_scope` - Default client scope management
+
+### Client Protocol Mappers
+Protocol mapper management for clients:
+- `list_client_protocol_mappers` / `get_client_protocol_mapper` - List and retrieve mappers
+- `create_client_protocol_mapper` / `update_client_protocol_mapper` - Mapper CRUD operations
+- `delete_client_protocol_mapper` - Remove protocol mappers
+- `create_client_protocol_mappers_bulk` - Bulk mapper creation
+- `get_client_protocol_mappers_by_protocol` - Filter mappers by protocol type
+
+### Client Scopes
+Client scope management:
+- `list_client_scopes` / `get_client_scope` - List and retrieve scopes
+- `create_client_scope` / `update_client_scope` - Scope CRUD operations
+- `delete_client_scope` - Remove client scopes
+
+### Client Scope Protocol Mappers
+Protocol mapper management for client scopes:
+- `list_client_scope_protocol_mappers` / `get_client_scope_protocol_mapper` - List and retrieve mappers
+- `create_client_scope_protocol_mapper` / `update_client_scope_protocol_mapper` - Mapper CRUD operations
+- `delete_client_scope_protocol_mapper` - Remove protocol mappers
+- `create_client_scope_protocol_mappers_bulk` - Bulk mapper creation
+- `get_client_scope_protocol_mappers_by_protocol` - Filter mappers by protocol type
+
+### Client Role Mappings
+Group client role mapping management:
+- `list_available_client_role_mappings` - List available client roles for groups
+- `list_composite_client_role_mappings` - List effective client role mappings
+- `get_client_role_mappings` - Retrieve current role mappings
+- `add_client_role_mappings` / `delete_client_role_mappings` - Manage role assignments
 
 ### Role Management
 Fine-grained permission control:
@@ -97,6 +127,8 @@ Fine-grained permission control:
 - `list_client_roles` / `create_client_role` - Client-specific roles
 - `assign_realm_role_to_user` / `remove_realm_role_from_user` - Role assignments
 - `get_user_realm_roles` / `assign_client_role_to_user` - User role queries
+- `list_role_composites` / `add_role_composites` / `delete_role_composites` - Composite role management
+- `get_role_composites_realm` / `get_role_composites_clients` - Query composite role hierarchies
 
 ### Group Management
 Hierarchical user organization:

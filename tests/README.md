@@ -28,14 +28,28 @@ The test suite provides comprehensive coverage of all Keycloak MCP tools. Tests 
 
 ```
 tests/
+├── test_client_protocol_mapper_tools.py    # Client protocol mappers (5 tests)
+├── test_client_role_mapping_tools.py       # Client role mappings for groups (5 tests)
+├── test_client_scope_protocol_mapper_tools.py # Client scope protocol mappers (5 tests)
+├── test_client_scope_tools.py              # Client scope management (4 tests)
 ├── test_connection.py                      # Basic connectivity (4 tests)
-└── test_imports.py                        # Module imports (5 tests)
+├── test_imports.py                         # Module imports (5 tests)
+├── test_role_composites.py                 # Role composite operations (6 tests)
+└── test_user_management.py                 # User management (9 tests)
 ```
 
 ### Test Categories
 
 | Category | File | Tests | Focus |
 | -------- | ---- | ----- | ----- |
+| **Client Scopes** | `test_client_scope_tools.py` | 4 | Client scope CRUD, attributes |
+| **Client Protocol Mappers** | `test_client_protocol_mapper_tools.py` | 5 | Mapper lifecycle, bulk operations, protocol filtering |
+| **Client Scope Mappers** | `test_client_scope_protocol_mapper_tools.py` | 5 | Scope mapper lifecycle, bulk operations |
+| **Client Role Mappings** | `test_client_role_mapping_tools.py` | 5 | Group role mappings, available/composite roles |
+| **Role Composites** | `test_role_composites.py` | 6 | Composite role management, realm/client composites |
+| **User Management** | `test_user_management.py` | 9 | User lifecycle, password management, sessions |
+| **Connectivity** | `test_connection.py` | 4 | Server connectivity, authentication |
+| **Imports** | `test_imports.py` | 5 | Module import verification |
 
 
 ## Prerequisites
@@ -155,9 +169,16 @@ uv run pytest tests/ -n auto
 ### Coverage by README.md Tool Categories
 
 All tool categories listed in README.md have comprehensive test coverage:
-- 
+- ✅ Client Scopes (4 tests)
+- ✅ Client Protocol Mappers (5 tests)
+- ✅ Client Scope Protocol Mappers (5 tests)
+- ✅ Client Role Mappings (5 tests)
+- ✅ Role Composites (6 tests)
+- ✅ User Management (9 tests)
+- ✅ Basic Connectivity (4 tests)
+- ✅ Module Imports (5 tests)
 
-**Total: 141 tests covering 100% of README.md tool categories**
+**Total: 43 tests covering all major tool categories**
 
 ### What's Tested
 

@@ -285,3 +285,70 @@ async def get_client_service_account(
     return await client._make_request(
         "GET", f"/clients/{id}/service-account-user", realm=realm
     )
+
+
+@mcp.tool()
+async def list_client_default_client_scopes(
+    id: str, realm: Optional[str] = None
+) -> List[Dict[str, Any]]:
+    """
+    List default client scopes for a client.
+
+    Args:
+        id: The client's database ID
+        realm: Target realm (uses default if not specified)
+
+    Returns:
+        List of default client scope objects
+    """
+    return await client._make_request(
+        "GET", f"/clients/{id}/default-client-scopes", realm=realm
+    )
+
+
+@mcp.tool()
+async def update_client_default_client_scope(
+    id: str, client_scope_id: str, realm: Optional[str] = None
+) -> Dict[str, str]:
+    """
+    Add a default client scope to a client.
+
+    Args:
+        id: The client's database ID
+        client_scope_id: The client scope ID to add as default
+        realm: Target realm (uses default if not specified)
+
+    Returns:
+        Status message
+    """
+    await client._make_request(
+        "PUT", f"/clients/{id}/default-client-scopes/{client_scope_id}", realm=realm
+    )
+    return {
+        "status": "updated",
+        "message": f"Client scope {client_scope_id} added as default to client {id}",
+    }
+
+
+@mcp.tool()
+async def delete_client_default_client_scope(
+    id: str, client_scope_id: str, realm: Optional[str] = None
+) -> Dict[str, str]:
+    """
+    Remove a default client scope from a client.
+
+    Args:
+        id: The client's database ID
+        client_scope_id: The client scope ID to remove from defaults
+        realm: Target realm (uses default if not specified)
+
+    Returns:
+        Status message
+    """
+    await client._make_request(
+        "DELETE", f"/clients/{id}/default-client-scopes/{client_scope_id}", realm=realm
+    )
+    return {
+        "status": "deleted",
+        "message": f"Client scope {client_scope_id} removed from client {id} defaults",
+    }
