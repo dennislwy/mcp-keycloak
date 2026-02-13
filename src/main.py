@@ -5,22 +5,37 @@ A Python MCP server for managing Keycloak identity and access management.
 Supports both stdio and HTTP transports.
 """
 
+import logging
 import os
 import sys
-import logging
+
 import uvicorn
-from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import Response
-from .common.server import mcp
 
 # Import all tool modules to register them with the MCP server
 from . import tools  # noqa: F401
-from .tools import user_tools  # noqa: F401
-from .tools import client_tools  # noqa: F401
-from .tools import realm_tools  # noqa: F401
-from .tools import role_tools  # noqa: F401
-from .tools import group_tools  # noqa: F401
+from .common.server import mcp
+from .tools import (
+    attack_detection_tools,  # noqa: F401
+    client_scope_tools,  # noqa: F401
+    client_sessions_tools,  # noqa: F401
+    client_tools,  # noqa: F401
+    events_tools,  # noqa: F401
+    group_tools,  # noqa: F401
+    identity_provider_tools,  # noqa: F401
+    keys_management_tools,  # noqa: F401
+    organization_management_tools,  # noqa: F401
+    protocol_mapper_tools,  # noqa: F401
+    realm_operations_tools,  # noqa: F401
+    realm_tools,  # noqa: F401
+    role_tools,  # noqa: F401
+    security_policies_tools,  # noqa: F401
+    sessions_management_tools,  # noqa: F401
+    user_federation_tools,  # noqa: F401
+    user_tools,  # noqa: F401
+)
 
 # Configure logging
 logging.basicConfig(
