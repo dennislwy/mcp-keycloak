@@ -18,22 +18,10 @@ from starlette.responses import Response
 from . import tools  # noqa: F401
 from .common.server import mcp
 from .tools import (
-    attack_detection_tools,  # noqa: F401
-    client_scope_tools,  # noqa: F401
-    client_sessions_tools,  # noqa: F401
     client_tools,  # noqa: F401
-    events_tools,  # noqa: F401
     group_tools,  # noqa: F401
-    identity_provider_tools,  # noqa: F401
-    keys_management_tools,  # noqa: F401
-    organization_management_tools,  # noqa: F401
-    protocol_mapper_tools,  # noqa: F401
-    realm_operations_tools,  # noqa: F401
     realm_tools,  # noqa: F401
     role_tools,  # noqa: F401
-    security_policies_tools,  # noqa: F401
-    sessions_management_tools,  # noqa: F401
-    user_federation_tools,  # noqa: F401
     user_tools,  # noqa: F401
 )
 

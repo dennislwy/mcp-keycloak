@@ -301,6 +301,26 @@ Query and analyze user data, session information, and access patterns to gain in
 ### 🚀 DevOps Integration
 Integrate Keycloak management into your CI/CD pipelines, allowing automated configuration of identity services.
 
+## Testing
+
+The project includes a comprehensive test suite with 189 integration tests covering all tool categories. For detailed information, see [tests/README.md](tests/README.md).
+
+### Running Tests
+
+```bash
+# Run all tests
+uv run pytest tests/
+
+# Run specific test file
+uv run pytest tests/test_user_management.py -v
+
+# Run with coverage
+uv run pytest --cov=src tests/
+
+# Skip integration tests (for quick checks)
+uv run pytest -m "not integration"
+```
+
 ## Requirements
 
 - Python 3.8 or higher
