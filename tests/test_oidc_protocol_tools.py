@@ -43,16 +43,18 @@ if PYTEST_AVAILABLE:
         """Create a test client for OIDC operations."""
         client_id = f"test-oidc-client-{uuid.uuid4().hex[:8]}"
 
-        # Create a public client for testing token requests
+        # Create a confidential client for testing token requests
+        # Must have directAccessGrantsEnabled for password grant
         await client_tools.create_client(
             client_id=client_id,
             name="Test OIDC Client",
             enabled=True,
             protocol="openid-connect",
-            public_client=False,  # Confidential client
-            direct_access_grants_enabled=True,  # Enable password grant
-            service_accounts_enabled=True,  # Enable client credentials
+            public_client=False,  # Confidential client (has secret)
+            direct_access_grants_enabled=True,  # CRITICAL: Enable password grant
+            service_accounts_enabled=True,  # Enable client credentials grant
             standard_flow_enabled=True,  # Enable authorization code flow
+            redirect_uris=["http://localhost:*"],  # Valid redirect URIs
         )
 
         # Get client database ID
@@ -82,13 +84,14 @@ if PYTEST_AVAILABLE:
         username = f"test-oidc-user-{uuid.uuid4().hex[:8]}"
         password = "Test@Password123"
 
-        # Create user
+        # Create user with email verified
         await user_tools.create_user(
             username=username,
             email=f"{username}@example.com",
             first_name="Test",
             last_name="OIDC User",
             enabled=True,
+            email_verified=True,  # CRITICAL: Mark email as verified
         )
 
         # Find user
@@ -96,7 +99,7 @@ if PYTEST_AVAILABLE:
         test_user = next((u for u in users if u["username"] == username), None)
         user_id = test_user["id"]
 
-        # Set password
+        # Set password (non-temporary)
         await user_tools.reset_user_password(
             user_id=user_id, password=password, temporary=False
         )

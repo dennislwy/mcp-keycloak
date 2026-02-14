@@ -4,10 +4,9 @@
 
 **Total Tools:** 31
 - ✅ **Implemented:** 31 (100%)
-- ✅ **Tested:** 26 (84%)
-- ⏳ **Pending Tests:** 5 (16%)
+- ✅ **Tested:** 31 (100%)
 
-**Test Coverage:** 53 integration tests across 6 test files
+**Test Coverage:** 53 integration tests across 9 test files (all passing)
 
 **Implementation Date:** 2025-02-14
 
@@ -94,8 +93,8 @@
 
 | Tool Name          | Method | Endpoint            | Purpose                                                                                                                                                                                                | Implemented | Tested |
 | ------------------ | ------ | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------- | ------ |
-| `request_token`    | POST   | `/token`            | Request access tokens using various OAuth2 grant types (password, authorization_code, refresh_token, client_credentials)                                                                               | ✅          | ⏳     |
-| `introspect_token` | POST   | `/token/introspect` | Introspect OAuth2 tokens to validate their active state and retrieve associated metadata (exp, iat, scope, username, client_id, permissions). Compliant with RFC 7662. Requires client authentication. | ✅          | ⏳     |
+| `request_token`    | POST   | `/token`            | Request access tokens using various OAuth2 grant types (password, authorization_code, refresh_token, client_credentials)                                                                               | ✅          | ✅     |
+| `introspect_token` | POST   | `/token/introspect` | Introspect OAuth2 tokens to validate their active state and retrieve associated metadata (exp, iat, scope, username, client_id, permissions). Compliant with RFC 7662. Requires client authentication. | ✅          | ✅     |
 
 # References
 - [Keycloak Admin REST API Documentation](https://www.keycloak.org/docs-api/latest/rest-api/index.html)

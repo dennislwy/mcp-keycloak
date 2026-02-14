@@ -135,6 +135,17 @@ class KeycloakClient:
                 return response.json()
             return None
 
+        except httpx.HTTPStatusError as e:
+            # Include response body in error for debugging
+            error_detail = ""
+            try:
+                error_body = e.response.json()
+                error_detail = f" - {error_body}"
+            except Exception:
+                error_detail = f" - {e.response.text}"
+            raise Exception(
+                f"Keycloak API request failed: {e.response.status_code} {e.response.reason_phrase}{error_detail}"
+            )
         except httpx.RequestError as e:
             raise Exception(f"Keycloak API request failed: {str(e)}")
 

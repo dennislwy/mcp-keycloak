@@ -47,7 +47,7 @@ tests/
 | **Client Protocol Mappers** | `test_client_protocol_mapper_tools.py` | 5 | Mapper lifecycle, bulk operations, protocol filtering |
 | **Client Scope Mappers** | `test_client_scope_protocol_mapper_tools.py` | 5 | Scope mapper lifecycle, bulk operations |
 | **Client Role Mappings** | `test_client_role_mapping_tools.py` | 5 | Group role mappings, available/composite roles |
-| **OIDC Protocol** | `test_oidc_protocol_tools.py` | 10 | Token requests, introspection, grant types |
+| **OIDC Protocol** | `test_oidc_protocol_tools.py` | 10 | Token requests, introspection, grant types (all passing) |
 | **Role Composites** | `test_role_composites.py` | 6 | Composite role management, realm/client composites |
 | **User Management** | `test_user_management.py` | 9 | User lifecycle, password management, sessions |
 | **Connectivity** | `test_connection.py` | 4 | Server connectivity, authentication |
@@ -175,13 +175,13 @@ All tool categories listed in README.md have comprehensive test coverage:
 - ✅ Client Protocol Mappers (5 tests)
 - ✅ Client Scope Protocol Mappers (5 tests)
 - ✅ Client Role Mappings (5 tests)
-- ⏳ OIDC Protocol (10 tests - implementation complete, tests need server configuration)
+- ✅ OIDC Protocol (10 tests)
 - ✅ Role Composites (6 tests)
 - ✅ User Management (9 tests)
 - ✅ Basic Connectivity (4 tests)
 - ✅ Module Imports (5 tests)
 
-**Total: 53 tests covering all major tool categories** (43 passing, 10 OIDC tests pending server config)
+**Total: 53 tests covering all major tool categories** (all passing ✅)
 
 ### What's Tested
 
