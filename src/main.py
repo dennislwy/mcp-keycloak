@@ -25,6 +25,7 @@ from .tools import (
     client_scope_tools,  # noqa: F401
     client_tools,  # noqa: F401
     group_tools,  # noqa: F401
+    oidc_protocol_tools,  # noqa: F401
     realm_tools,  # noqa: F401
     role_tools,  # noqa: F401
     user_tools,  # noqa: F401

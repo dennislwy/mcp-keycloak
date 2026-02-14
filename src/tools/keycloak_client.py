@@ -19,15 +19,17 @@ class KeycloakClient:
         self._client = None
 
     async def _ensure_client(self):
-        """Ensure httpx async client exists"""
-        if self._client is None:
+        """Ensure httpx async client exists and is usable"""
+        if self._client is None or self._client.is_closed:
             self._client = httpx.AsyncClient(timeout=DEFAULT_REQUEST_TIMEOUT)
         return self._client
 
     async def _get_token(self) -> str:
         """Get access token using username and password"""
         # Use new URL structure (Keycloak 17+)
-        token_url = f"{self.server_url}/realms/{self.realm_name}/protocol/openid-connect/token"
+        token_url = (
+            f"{self.server_url}/realms/{self.realm_name}/protocol/openid-connect/token"
+        )
 
         data = {
             "grant_type": "password",
@@ -64,38 +66,68 @@ class KeycloakClient:
         params: Optional[Dict] = None,
         skip_realm: bool = False,
         realm: Optional[str] = None,
+        content_type: str = "application/json",
+        require_auth: bool = True,
     ) -> Any:
-        """Make authenticated request to Keycloak API"""
-        if skip_realm:
+        """Make authenticated request to Keycloak API
+
+        Args:
+            method: HTTP method
+            endpoint: API endpoint path
+            data: Request data (JSON or form data)
+            params: Query parameters
+            skip_realm: Skip realm in URL path
+            realm: Target realm (uses default if not specified)
+            content_type: Content type for request (application/json or application/x-www-form-urlencoded)
+            require_auth: Whether authentication is required (False for public endpoints)
+        """
+        # Build URL based on endpoint type
+        if endpoint.startswith("/protocol/"):
+            # Public OIDC/SAML endpoints (no /admin prefix)
+            target_realm = realm if realm is not None else self.realm_name
+            url = f"{self.server_url}/realms/{target_realm}{endpoint}"
+        elif skip_realm:
+            # Admin endpoints without realm
             url = f"{self.server_url}/admin{endpoint}"
         else:
-            # Use provided realm or fall back to configured realm
+            # Standard admin endpoints with realm
             target_realm = realm if realm is not None else self.realm_name
             url = f"{self.server_url}/admin/realms/{target_realm}{endpoint}"
 
         try:
             client = await self._ensure_client()
-            headers = await self._get_headers()
 
-            response = await client.request(
-                method=method,
-                url=url,
-                headers=headers,
-                json=data,
-                params=params,
-            )
+            # Prepare headers
+            if require_auth:
+                headers = await self._get_headers()
+                headers["Content-Type"] = content_type
+            else:
+                headers = {"Content-Type": content_type}
 
-            # If token expired, refresh and retry
-            if response.status_code == 401:
+            # Prepare request kwargs
+            request_kwargs = {
+                "method": method,
+                "url": url,
+                "headers": headers,
+                "params": params,
+            }
+
+            # Add data based on content type
+            if data:
+                if content_type == "application/x-www-form-urlencoded":
+                    request_kwargs["data"] = data
+                else:
+                    request_kwargs["json"] = data
+
+            response = await client.request(**request_kwargs)
+
+            # If token expired and auth is required, refresh and retry
+            if response.status_code == 401 and require_auth:
                 await self._get_token()
                 headers = await self._get_headers()
-                response = await client.request(
-                    method=method,
-                    url=url,
-                    headers=headers,
-                    json=data,
-                    params=params,
-                )
+                headers["Content-Type"] = content_type
+                request_kwargs["headers"] = headers
+                response = await client.request(**request_kwargs)
 
             response.raise_for_status()
 

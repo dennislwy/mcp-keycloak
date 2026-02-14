@@ -143,6 +143,11 @@ System-wide configuration:
 - `get_realm_events_config` / `update_realm_events_config` - Event management
 - `add_realm_default_group` / `remove_realm_default_group` - Default settings
 
+### OIDC Protocol
+OAuth2/OpenID Connect token operations:
+- `request_token` - Request access tokens using various OAuth2 grant types (password, client_credentials, authorization_code, refresh_token)
+- `introspect_token` - Introspect tokens to validate state and retrieve metadata (RFC 7662 compliant)
+
 ### Authentication Management
 Complete authentication flow control:
 - `list_authentication_flows` / `get_authentication_flow` - Flow management

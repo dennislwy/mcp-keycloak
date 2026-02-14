@@ -80,7 +80,10 @@ class KeycloakAdminSetup:
     ):
         """Create a new user in the realm"""
         url = f"{self.server_url}/admin/realms/{self.realm}/users"
-        headers = {"Authorization": f"Bearer {self.token}", "Content-Type": "application/json"}
+        headers = {
+            "Authorization": f"Bearer {self.token}",
+            "Content-Type": "application/json",
+        }
 
         user_data = {
             "username": username,
@@ -89,7 +92,9 @@ class KeycloakAdminSetup:
             "lastName": last_name,
             "enabled": True,
             "emailVerified": True,
-            "credentials": [{"type": "password", "value": password, "temporary": False}],
+            "credentials": [
+                {"type": "password", "value": password, "temporary": False}
+            ],
         }
 
         print(f"[*] Creating user '{username}'...")
@@ -158,30 +163,46 @@ class KeycloakAdminSetup:
     async def assign_realm_roles(self, user_id: str, roles: list):
         """Assign realm-level roles to a user"""
         url = f"{self.server_url}/admin/realms/{self.realm}/users/{user_id}/role-mappings/realm"
-        headers = {"Authorization": f"Bearer {self.token}", "Content-Type": "application/json"}
+        headers = {
+            "Authorization": f"Bearer {self.token}",
+            "Content-Type": "application/json",
+        }
 
         # Filter roles to only include id and name
-        role_representations = [{"id": role["id"], "name": role["name"]} for role in roles]
+        role_representations = [
+            {"id": role["id"], "name": role["name"]} for role in roles
+        ]
 
         print(f"[*] Assigning {len(role_representations)} realm roles...")
-        response = await self.client.post(url, headers=headers, json=role_representations)
+        response = await self.client.post(
+            url, headers=headers, json=role_representations
+        )
         response.raise_for_status()
         print("[+] Realm roles assigned successfully")
 
     async def assign_client_roles(self, user_id: str, client_uuid: str, roles: list):
         """Assign client-specific roles to a user"""
         url = f"{self.server_url}/admin/realms/{self.realm}/users/{user_id}/role-mappings/clients/{client_uuid}"
-        headers = {"Authorization": f"Bearer {self.token}", "Content-Type": "application/json"}
+        headers = {
+            "Authorization": f"Bearer {self.token}",
+            "Content-Type": "application/json",
+        }
 
         # Filter roles to only include id and name
-        role_representations = [{"id": role["id"], "name": role["name"]} for role in roles]
+        role_representations = [
+            {"id": role["id"], "name": role["name"]} for role in roles
+        ]
 
         print(f"[*] Assigning {len(role_representations)} client roles...")
-        response = await self.client.post(url, headers=headers, json=role_representations)
+        response = await self.client.post(
+            url, headers=headers, json=role_representations
+        )
         response.raise_for_status()
         print("[+] Client roles assigned successfully")
 
-    async def configure_brute_force_protection(self, enabled: bool = True, relaxed: bool = True):
+    async def configure_brute_force_protection(
+        self, enabled: bool = True, relaxed: bool = True
+    ):
         """
         Configure brute force protection settings for the realm.
 
@@ -190,7 +211,10 @@ class KeycloakAdminSetup:
             relaxed: If True, use relaxed settings suitable for testing
         """
         url = f"{self.server_url}/admin/realms/{self.realm}"
-        headers = {"Authorization": f"Bearer {self.token}", "Content-Type": "application/json"}
+        headers = {
+            "Authorization": f"Bearer {self.token}",
+            "Content-Type": "application/json",
+        }
 
         if relaxed:
             # Relaxed settings for testing - very high thresholds
@@ -204,7 +228,9 @@ class KeycloakAdminSetup:
                 "maxDeltaTimeSeconds": 43200,  # 12 hours
                 "failureFactor": 100,  # Allow 100 failures before lockout (very high for testing)
             }
-            protection_type = "relaxed (100 failures allowed)" if enabled else "disabled"
+            protection_type = (
+                "relaxed (100 failures allowed)" if enabled else "disabled"
+            )
         else:
             # Standard protection settings
             settings = {
@@ -217,7 +243,9 @@ class KeycloakAdminSetup:
                 "maxDeltaTimeSeconds": 43200,
                 "failureFactor": 30,  # Standard threshold
             }
-            protection_type = "standard (30 failures allowed)" if enabled else "disabled"
+            protection_type = (
+                "standard (30 failures allowed)" if enabled else "disabled"
+            )
 
         print(f"[*] Configuring brute force protection ({protection_type})...")
         response = await self.client.get(
@@ -284,7 +312,9 @@ async def setup_test_admin():
 
         if realm_mgmt_client:
             realm_mgmt_roles = await setup.get_client_roles(realm_mgmt_client["id"])
-            await setup.assign_client_roles(user_id, realm_mgmt_client["id"], realm_mgmt_roles)
+            await setup.assign_client_roles(
+                user_id, realm_mgmt_client["id"], realm_mgmt_roles
+            )
         else:
             print("[!] Warning: 'realm-management' client not found")
 
@@ -292,7 +322,9 @@ async def setup_test_admin():
         if setup.realm == "master":
             master_realm_client = await setup.get_client_by_clientid("master-realm")
             if master_realm_client:
-                master_realm_roles = await setup.get_client_roles(master_realm_client["id"])
+                master_realm_roles = await setup.get_client_roles(
+                    master_realm_client["id"]
+                )
                 await setup.assign_client_roles(
                     user_id, master_realm_client["id"], master_realm_roles
                 )
