@@ -166,10 +166,33 @@ async def update_client(
     public_client: Optional[bool] = None,
     service_accounts_enabled: Optional[bool] = None,
     direct_access_grants_enabled: Optional[bool] = None,
+    # Priority 1: Parameters from create_client
+    standard_flow_enabled: Optional[bool] = None,
+    implicit_flow_enabled: Optional[bool] = None,
+    bearer_only: Optional[bool] = None,
+    authorization_services_enabled: Optional[bool] = None,
+    always_display_in_console: Optional[bool] = None,
+    root_url: Optional[str] = None,
+    base_url: Optional[str] = None,
+    admin_url: Optional[str] = None,
+    protocol: Optional[str] = None,
+    # Priority 2: Critical OAuth2/OIDC parameters
+    full_scope_allowed: Optional[bool] = None,
+    consent_required: Optional[bool] = None,
+    client_authenticator_type: Optional[str] = None,
+    frontchannel_logout: Optional[bool] = None,
+    # Priority 3: Advanced configuration
+    surrogate_auth_required: Optional[bool] = None,
+    not_before: Optional[int] = None,
+    node_reregistration_timeout: Optional[int] = None,
+    attributes: Optional[Dict[str, str]] = None,
+    authentication_flow_binding_overrides: Optional[Dict[str, str]] = None,
+    default_client_scopes: Optional[List[str]] = None,
+    optional_client_scopes: Optional[List[str]] = None,
     realm: Optional[str] = None,
 ) -> Dict[str, str]:
     """
-    Update an existing client.
+    Update an existing client with commonly used parameters.
 
     Args:
         id: The client's database ID
@@ -182,6 +205,26 @@ async def update_client(
         public_client: Whether client is public
         service_accounts_enabled: Enable service accounts
         direct_access_grants_enabled: Enable direct access grants
+        standard_flow_enabled: Enable standard flow (authorization code)
+        implicit_flow_enabled: Enable implicit flow
+        bearer_only: Bearer-only client
+        authorization_services_enabled: Enable authorization services
+        always_display_in_console: Always display in account console
+        root_url: Root URL for relative URLs
+        base_url: Base URL for the client
+        admin_url: Admin URL for the client
+        protocol: Protocol (openid-connect or saml)
+        full_scope_allowed: Whether client can access all roles (false = only assigned scopes)
+        consent_required: Whether user consent is required
+        client_authenticator_type: Type of client authenticator (e.g., 'client-secret', 'client-jwt')
+        frontchannel_logout: Enable front-channel logout
+        surrogate_auth_required: Whether surrogate authentication is required
+        not_before: Not before timestamp
+        node_reregistration_timeout: Timeout for node re-registration
+        attributes: Custom attributes as key-value pairs
+        authentication_flow_binding_overrides: Authentication flow overrides
+        default_client_scopes: List of default client scope names
+        optional_client_scopes: List of optional client scope names
         realm: Target realm (uses default if not specified)
 
     Returns:
@@ -210,10 +253,106 @@ async def update_client(
     if direct_access_grants_enabled is not None:
         current_client["directAccessGrantsEnabled"] = direct_access_grants_enabled
 
+    # Priority 1: Parameters from create_client
+    if standard_flow_enabled is not None:
+        current_client["standardFlowEnabled"] = standard_flow_enabled
+    if implicit_flow_enabled is not None:
+        current_client["implicitFlowEnabled"] = implicit_flow_enabled
+    if bearer_only is not None:
+        current_client["bearerOnly"] = bearer_only
+    if authorization_services_enabled is not None:
+        current_client["authorizationServicesEnabled"] = authorization_services_enabled
+    if always_display_in_console is not None:
+        current_client["alwaysDisplayInConsole"] = always_display_in_console
+    if root_url is not None:
+        current_client["rootUrl"] = root_url
+    if base_url is not None:
+        current_client["baseUrl"] = base_url
+    if admin_url is not None:
+        current_client["adminUrl"] = admin_url
+    if protocol is not None:
+        current_client["protocol"] = protocol
+
+    # Priority 2: Critical OAuth2/OIDC parameters
+    if full_scope_allowed is not None:
+        current_client["fullScopeAllowed"] = full_scope_allowed
+    if consent_required is not None:
+        current_client["consentRequired"] = consent_required
+    if client_authenticator_type is not None:
+        current_client["clientAuthenticatorType"] = client_authenticator_type
+    if frontchannel_logout is not None:
+        current_client["frontchannelLogout"] = frontchannel_logout
+
+    # Priority 3: Advanced configuration
+    if surrogate_auth_required is not None:
+        current_client["surrogateAuthRequired"] = surrogate_auth_required
+    if not_before is not None:
+        current_client["notBefore"] = not_before
+    if node_reregistration_timeout is not None:
+        current_client["nodeReRegistrationTimeout"] = node_reregistration_timeout
+    if attributes is not None:
+        current_client["attributes"] = attributes
+    if authentication_flow_binding_overrides is not None:
+        current_client["authenticationFlowBindingOverrides"] = authentication_flow_binding_overrides
+    if default_client_scopes is not None:
+        current_client["defaultClientScopes"] = default_client_scopes
+    if optional_client_scopes is not None:
+        current_client["optionalClientScopes"] = optional_client_scopes
+
     await client._make_request(
         "PUT", f"/clients/{id}", data=current_client, realm=realm
     )
     return {"status": "updated", "message": f"Client {id} updated successfully"}
+
+
+@mcp.tool()
+async def update_client_advanced(
+    id: str,
+    client_representation: Dict[str, Any],
+    realm: Optional[str] = None,
+) -> Dict[str, str]:
+    """
+    Update a client with full control using raw ClientRepresentation object.
+
+    This is an advanced tool for power users who need to update client properties
+    not covered by the standard update_client tool. The provided client_representation
+    will be merged with the current client configuration.
+
+    Args:
+        id: The client's database ID
+        client_representation: Partial or full ClientRepresentation object as a dict
+        realm: Target realm (uses default if not specified)
+
+    Returns:
+        Status message
+
+    Example client_representation:
+        {
+            "fullScopeAllowed": false,
+            "attributes": {
+                "custom.attribute": "value"
+            },
+            "protocolMappers": [...],
+            "authorizationSettings": {...}
+        }
+
+    See Keycloak ClientRepresentation documentation for all available properties:
+    https://www.keycloak.org/docs-api/latest/rest-api/index.html
+    """
+    # Get current client data
+    current_client = await client._make_request("GET", f"/clients/{id}", realm=realm)
+
+    # Merge the provided representation with current client
+    # This allows partial updates while preserving unspecified fields
+    current_client.update(client_representation)
+
+    await client._make_request(
+        "PUT", f"/clients/{id}", data=current_client, realm=realm
+    )
+    return {
+        "status": "updated",
+        "message": f"Client {id} updated successfully with advanced configuration",
+    }
 
 
 @mcp.tool()
