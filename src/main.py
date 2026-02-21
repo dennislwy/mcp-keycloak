@@ -18,6 +18,7 @@ from starlette.responses import Response
 from . import tools  # noqa: F401
 from .common.server import mcp
 from .tools import (
+    attack_detection_tools,  # noqa: F401
     authentication_management_tools,  # noqa: F401
     client_protocol_mapper_tools,  # noqa: F401
     client_role_mapping_tools,  # noqa: F401
