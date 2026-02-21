@@ -12,16 +12,20 @@ async def list_clients(
     viewable_only: bool = False,
     first: Optional[int] = None,
     max: Optional[int] = None,
+    q: Optional[str] = None,
+    search: bool = False,
     realm: Optional[str] = None,
 ) -> List[Dict[str, Any]]:
     """
-    List clients in the realm.
+    List clients in the realm with advanced filtering options.
 
     Args:
-        client_id: Filter by client ID (partial match)
+        client_id: Filter by client ID (partial match unless search=True)
         viewable_only: Only return viewable clients
         first: Pagination offset
         max: Maximum results size
+        q: Query parameter for advanced filtering
+        search: Whether this is a search query (true) or getClientById query (false)
         realm: Target realm (uses default if not specified)
 
     Returns:
@@ -36,6 +40,10 @@ async def list_clients(
         params["first"] = first
     if max is not None:
         params["max"] = max
+    if q:
+        params["q"] = q
+    if search:
+        params["search"] = "true"
 
     return await client._make_request("GET", "/clients", params=params, realm=realm)
 
@@ -88,6 +96,8 @@ async def create_client(
     enabled: bool = True,
     always_display_in_console: bool = False,
     root_url: Optional[str] = None,
+    base_url: Optional[str] = None,
+    admin_url: Optional[str] = None,
     redirect_uris: Optional[List[str]] = None,
     web_origins: Optional[List[str]] = None,
     protocol: str = "openid-connect",
@@ -98,10 +108,17 @@ async def create_client(
     direct_access_grants_enabled: bool = False,
     implicit_flow_enabled: bool = False,
     standard_flow_enabled: bool = True,
+    full_scope_allowed: bool = True,
+    consent_required: bool = False,
+    client_authenticator_type: str = "client-secret",
+    frontchannel_logout: bool = False,
+    attributes: Optional[Dict[str, str]] = None,
+    default_client_scopes: Optional[List[str]] = None,
+    optional_client_scopes: Optional[List[str]] = None,
     realm: Optional[str] = None,
 ) -> Dict[str, str]:
     """
-    Create a new client.
+    Create a new client with comprehensive configuration options.
 
     Args:
         client_id: Client ID (unique identifier)
@@ -110,6 +127,8 @@ async def create_client(
         enabled: Whether the client is enabled
         always_display_in_console: Always display in account console
         root_url: Root URL for relative URLs
+        base_url: Base URL for the client
+        admin_url: Admin URL for callbacks and management
         redirect_uris: Valid redirect URIs
         web_origins: Allowed CORS origins
         protocol: Protocol (openid-connect or saml)
@@ -120,10 +139,17 @@ async def create_client(
         direct_access_grants_enabled: Enable direct access grants (password flow)
         implicit_flow_enabled: Enable implicit flow
         standard_flow_enabled: Enable standard flow (authorization code)
+        full_scope_allowed: Whether client can access all roles (true = all roles, false = only assigned scopes)
+        consent_required: Whether user consent is required
+        client_authenticator_type: Type of client authenticator (e.g., 'client-secret', 'client-jwt')
+        frontchannel_logout: Enable front-channel logout
+        attributes: Custom attributes as key-value pairs
+        default_client_scopes: List of default client scope names
+        optional_client_scopes: List of optional client scope names
         realm: Target realm (uses default if not specified)
 
     Returns:
-        Status message
+        Status message with client creation confirmation
     """
     client_data = {
         "clientId": client_id,
@@ -137,6 +163,10 @@ async def create_client(
         "directAccessGrantsEnabled": direct_access_grants_enabled,
         "implicitFlowEnabled": implicit_flow_enabled,
         "standardFlowEnabled": standard_flow_enabled,
+        "fullScopeAllowed": full_scope_allowed,
+        "consentRequired": consent_required,
+        "clientAuthenticatorType": client_authenticator_type,
+        "frontchannelLogout": frontchannel_logout,
     }
 
     if name:
@@ -145,10 +175,20 @@ async def create_client(
         client_data["description"] = description
     if root_url:
         client_data["rootUrl"] = root_url
+    if base_url:
+        client_data["baseUrl"] = base_url
+    if admin_url:
+        client_data["adminUrl"] = admin_url
     if redirect_uris:
         client_data["redirectUris"] = redirect_uris
     if web_origins:
         client_data["webOrigins"] = web_origins
+    if attributes:
+        client_data["attributes"] = attributes
+    if default_client_scopes:
+        client_data["defaultClientScopes"] = default_client_scopes
+    if optional_client_scopes:
+        client_data["optionalClientScopes"] = optional_client_scopes
 
     await client._make_request("POST", "/clients", data=client_data, realm=realm)
     return {"status": "created", "message": f"Client {client_id} created successfully"}
@@ -293,7 +333,9 @@ async def update_client(
     if attributes is not None:
         current_client["attributes"] = attributes
     if authentication_flow_binding_overrides is not None:
-        current_client["authenticationFlowBindingOverrides"] = authentication_flow_binding_overrides
+        current_client["authenticationFlowBindingOverrides"] = (
+            authentication_flow_binding_overrides
+        )
     if default_client_scopes is not None:
         current_client["defaultClientScopes"] = default_client_scopes
     if optional_client_scopes is not None:

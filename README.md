@@ -89,12 +89,16 @@ Complete user lifecycle management with advanced search and filtering:
 - Support for required actions (VERIFY_EMAIL, UPDATE_PASSWORD, CONFIGURE_TOTP, etc.)
 
 ### Client Management
-OAuth2/OIDC client configuration:
-- `list_clients` / `get_client` / `create_client` - Client operations
+OAuth2/OIDC client configuration with comprehensive single-step creation:
+- `list_clients` - List clients with advanced filtering (client_id, q, search, pagination)
+- `get_client` / `get_client_by_clientid` - Retrieve client details
+- `create_client` - Create clients with 25 parameters including consent, scopes, attributes, and URLs (single-step configuration)
+- `update_client` - Full client updates with 24+ parameters
 - `get_client_secret` / `regenerate_client_secret` - Secret management
 - `get_client_service_account` - Service account access
-- `update_client` / `delete_client` - Client modifications
+- `delete_client` - Client removal
 - `list_client_default_client_scopes` / `update_client_default_client_scope` / `delete_client_default_client_scope` - Default client scope management
+- Support for consent, full scope control, custom attributes, and authentication types
 
 ### Client Protocol Mappers
 Protocol mapper management for clients:
@@ -351,7 +355,7 @@ Integrate Keycloak management into your CI/CD pipelines, allowing automated conf
 
 ## Testing
 
-The project includes a comprehensive test suite with 189 integration tests covering all tool categories. For detailed information, see [tests/README.md](tests/README.md).
+The project includes a comprehensive test suite with 92 tests (84 integration tests) covering all tool categories. For detailed information, see [tests/README.md](tests/README.md).
 
 ### Running Tests
 

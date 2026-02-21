@@ -28,30 +28,36 @@ The test suite provides comprehensive coverage of all Keycloak MCP tools. Tests 
 
 ```
 tests/
+├── test_attack_detection_tools.py          # Attack detection & brute force protection (7 tests)
 ├── test_client_protocol_mapper_tools.py    # Client protocol mappers (5 tests)
 ├── test_client_role_mapping_tools.py       # Client role mappings for groups (5 tests)
 ├── test_client_scope_protocol_mapper_tools.py # Client scope protocol mappers (5 tests)
 ├── test_client_scope_tools.py              # Client scope management (4 tests)
+├── test_client_tools.py                    # Client CRUD & enhanced creation (11 tests)
 ├── test_connection.py                      # Basic connectivity (4 tests)
+├── test_group_tools.py                     # Group management & hierarchy (11 tests)
 ├── test_imports.py                         # Module imports (5 tests)
 ├── test_oidc_protocol_tools.py             # OIDC token operations (10 tests)
 ├── test_role_composites.py                 # Role composite operations (6 tests)
-└── test_user_management.py                 # User management (9 tests)
+└── test_user_tools.py                      # User management & lifecycle (19 tests)
 ```
 
 ### Test Categories
 
 | Category | File | Tests | Focus |
 | -------- | ---- | ----- | ----- |
-| **Client Scopes** | `test_client_scope_tools.py` | 4 | Client scope CRUD, attributes |
-| **Client Protocol Mappers** | `test_client_protocol_mapper_tools.py` | 5 | Mapper lifecycle, bulk operations, protocol filtering |
-| **Client Scope Mappers** | `test_client_scope_protocol_mapper_tools.py` | 5 | Scope mapper lifecycle, bulk operations |
-| **Client Role Mappings** | `test_client_role_mapping_tools.py` | 5 | Group role mappings, available/composite roles |
-| **OIDC Protocol** | `test_oidc_protocol_tools.py` | 10 | Token requests, introspection, grant types (all passing) |
+| **User Management** | `test_user_tools.py` | 19 | User lifecycle, advanced search, required actions, groups/roles |
+| **Client Management** | `test_client_tools.py` | 11 | Client CRUD, enhanced creation with 25 params, OAuth2 settings |
+| **Group Management** | `test_group_tools.py` | 11 | Group lifecycle, hierarchy, subgroups, advanced search |
+| **OIDC Protocol** | `test_oidc_protocol_tools.py` | 10 | Token requests, introspection, grant types |
+| **Attack Detection** | `test_attack_detection_tools.py` | 7 | Brute force status, login failure management |
 | **Role Composites** | `test_role_composites.py` | 6 | Composite role management, realm/client composites |
-| **User Management** | `test_user_management.py` | 9 | User lifecycle, password management, sessions |
+| **Client Protocol Mappers** | `test_client_protocol_mapper_tools.py` | 5 | Mapper lifecycle, bulk operations, protocol filtering |
+| **Client Role Mappings** | `test_client_role_mapping_tools.py` | 5 | Group role mappings, available/composite roles |
+| **Client Scope Mappers** | `test_client_scope_protocol_mapper_tools.py` | 5 | Scope mapper lifecycle, bulk operations |
+| **Module Imports** | `test_imports.py` | 5 | Module import verification |
+| **Client Scopes** | `test_client_scope_tools.py` | 4 | Client scope CRUD, attributes |
 | **Connectivity** | `test_connection.py` | 4 | Server connectivity, authentication |
-| **Imports** | `test_imports.py` | 5 | Module import verification |
 
 
 ## Prerequisites
@@ -171,17 +177,20 @@ uv run pytest tests/ -n auto
 ### Coverage by README.md Tool Categories
 
 All tool categories listed in README.md have comprehensive test coverage:
-- ✅ Client Scopes (4 tests)
-- ✅ Client Protocol Mappers (5 tests)
-- ✅ Client Scope Protocol Mappers (5 tests)
-- ✅ Client Role Mappings (5 tests)
-- ✅ OIDC Protocol (10 tests)
-- ✅ Role Composites (6 tests)
-- ✅ User Management (9 tests)
-- ✅ Basic Connectivity (4 tests)
-- ✅ Module Imports (5 tests)
+- ✅ User Management (19 tests) - CRUD, search, lifecycle, required actions
+- ✅ Client Management (11 tests) - CRUD, enhanced creation, OAuth2 settings
+- ✅ Group Management (11 tests) - Hierarchy, subgroups, advanced search
+- ✅ OIDC Protocol (10 tests) - Token operations, grant types
+- ✅ Attack Detection (7 tests) - Brute force protection, login failures
+- ✅ Role Composites (6 tests) - Composite roles, realm/client
+- ✅ Client Protocol Mappers (5 tests) - Mapper lifecycle, bulk operations
+- ✅ Client Role Mappings (5 tests) - Group role assignments
+- ✅ Client Scope Mappers (5 tests) - Scope mapper operations
+- ✅ Module Imports (5 tests) - Import verification
+- ✅ Client Scopes (4 tests) - Scope CRUD operations
+- ✅ Basic Connectivity (4 tests) - Authentication, server connection
 
-**Total: 53 tests covering all major tool categories** (all passing ✅)
+**Total: 92 tests (84 integration tests) covering all major tool categories** (all passing ✅)
 
 ### What's Tested
 
