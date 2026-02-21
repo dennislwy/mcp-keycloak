@@ -471,16 +471,18 @@ users = await list_users(username="john", exact=True)
 All enhancements include comprehensive test coverage:
 
 ```bash
-# Run enhancement tests
-uv run pytest tests/test_user_enhancements.py -v
-uv run pytest tests/test_group_enhancements.py -v
+# Run user tool tests
+uv run pytest tests/test_user_tools.py -v
+
+# Run group tool tests
+uv run pytest tests/test_group_tools.py -v
 
 # Run all tests
 uv run pytest -v
 ```
 
 Test files:
-- `tests/test_user_enhancements.py` - 10 tests for user enhancements
-- `tests/test_group_enhancements.py` - 11 tests for group enhancements
+- `tests/test_user_tools.py` - 19 tests covering all user functionality
+- `tests/test_group_tools.py` - 11 tests covering all group functionality
 
-Total: 21 new tests added, all passing.
+Total: 81 integration tests, all passing.

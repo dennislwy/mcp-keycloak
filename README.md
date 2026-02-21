@@ -360,7 +360,7 @@ The project includes a comprehensive test suite with 189 integration tests cover
 uv run pytest tests/
 
 # Run specific test file
-uv run pytest tests/test_user_management.py -v
+uv run pytest tests/test_user_tools.py -v
 
 # Run with coverage
 uv run pytest --cov=src tests/
