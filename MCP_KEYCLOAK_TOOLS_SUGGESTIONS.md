@@ -7,7 +7,7 @@
 - ✅ **Tested:** 37 (100%)
 - 🔧 **Enhanced:** User and Group tools with advanced parameters
 
-**Test Coverage:** 81 integration tests across 12 test files (all passing)
+**Test Coverage:** 81 integration tests across 11 test files (all passing)
 
 **Implementation Date:** 2025-02-14
 **Last Updated:** 2026-02-20

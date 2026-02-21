@@ -1,7 +1,8 @@
 """
-Integration tests for enhanced Group Management features.
+Integration tests for group management tools.
 
-These tests cover the new parameters and hierarchy operations added to group tools.
+These tests cover all group-related functionality including CRUD operations,
+hierarchy management, member operations, and advanced search features.
 """
 
 import pytest
@@ -21,7 +22,7 @@ from src.tools.user_tools import create_user, delete_user, list_users
 @pytest.fixture(scope="module")
 async def test_parent_group():
     """Create a parent group for hierarchy tests."""
-    group_name = "test-parent-enhanced"
+    group_name = "test-parent-groups"
     await create_group(name=group_name)
 
     # Get the group ID
@@ -59,8 +60,8 @@ async def test_user_for_groups():
 
 
 @pytest.mark.integration
-class TestEnhancedGroupSearch:
-    """Test enhanced group search capabilities."""
+class TestGroupSearch:
+    """Test group search capabilities."""
 
     async def test_list_groups_with_exact_match(self):
         """Test exact matching for group searches."""
@@ -115,15 +116,11 @@ class TestEnhancedGroupSearch:
 
         try:
             # Get full representation
-            full_groups = await list_groups(
-                search=group_name, brief_representation=False
-            )
+            full_groups = await list_groups(search=group_name, brief_representation=False)
             assert len(full_groups) >= 1
 
             # Get brief representation (default)
-            brief_groups = await list_groups(
-                search=group_name, brief_representation=True
-            )
+            brief_groups = await list_groups(search=group_name, brief_representation=True)
             assert len(brief_groups) >= 1
 
             # Both should have basic fields
@@ -155,9 +152,7 @@ class TestEnhancedGroupSearch:
             assert len(groups) >= 1
 
             # Without hierarchy
-            flat_groups = await list_groups(
-                search=parent_name, populate_hierarchy=False
-            )
+            flat_groups = await list_groups(search=parent_name, populate_hierarchy=False)
             assert len(flat_groups) >= 1
 
             # Both should return groups, hierarchy affects structure
@@ -249,9 +244,7 @@ class TestGroupMembers:
         # New group should have no members initially
         assert len(members) == 0
 
-    async def test_add_and_remove_group_member(
-        self, test_parent_group, test_user_for_groups
-    ):
+    async def test_add_and_remove_group_member(self, test_parent_group, test_user_for_groups):
         """Test adding and removing a user from a group."""
         parent_id, parent_name = test_parent_group
         user_id = test_user_for_groups
@@ -266,9 +259,7 @@ class TestGroupMembers:
         assert user_id in member_ids
 
         # Remove user from group
-        remove_result = await remove_user_from_group(
-            user_id=user_id, group_id=parent_id
-        )
+        remove_result = await remove_user_from_group(user_id=user_id, group_id=parent_id)
         assert remove_result["status"] == "removed"
 
         # Verify user is no longer in group

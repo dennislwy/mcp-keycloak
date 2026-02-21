@@ -1,3 +1,6 @@
+# This file has been renamed to test_attack_detection.py for consistency
+# Please use test_attack_detection.py instead
+
 import pytest
 from src.tools.attack_detection_tools import (
     get_user_brute_force_status,

@@ -28,7 +28,10 @@ Configure realm settings, manage default groups, handle event configurations, an
 Comprehensive authentication flow management including creating, updating, and deleting flows, managing executions, and configuring authenticators.
 
 ### 🔄 Group Management
-Organize users into groups, manage group hierarchies, and handle group-based permissions efficiently.
+Organize users into groups, manage group hierarchies, handle group-based permissions efficiently, and navigate nested group structures.
+
+### 🛡️ Attack Detection & Security
+Monitor and manage brute force protection, clear login failures, and release temporarily locked users.
 
 ## Installation
 
@@ -77,12 +80,13 @@ CLIENT_SECRET=optional-client-secret
 The Keycloak MCP Server provides a comprehensive set of tools organized by functionality:
 
 ### User Management
-Complete user lifecycle management including:
-- `list_users` - List users with pagination and filtering
-- `create_user` / `update_user` / `delete_user` - Full CRUD operations
+Complete user lifecycle management with advanced search and filtering:
+- `list_users` - List users with pagination, exact matching, name filters, email verification status, custom attributes, and IDP filtering
+- `create_user` / `update_user` / `delete_user` - Full CRUD operations with group and role assignment
 - `reset_user_password` - Password management
 - `get_user_sessions` / `logout_user` - Session control
 - `count_users` - User statistics
+- Support for required actions (VERIFY_EMAIL, UPDATE_PASSWORD, CONFIGURE_TOTP, etc.)
 
 ### Client Management
 OAuth2/OIDC client configuration:
@@ -131,8 +135,9 @@ Fine-grained permission control:
 - `get_role_composites_realm` / `get_role_composites_clients` - Query composite role hierarchies
 
 ### Group Management
-Hierarchical user organization:
-- `list_groups` / `create_group` / `update_group` - Group operations
+Hierarchical user organization with advanced search and hierarchy support:
+- `list_groups` / `create_group` / `update_group` - Group operations with exact matching and hierarchy control
+- `list_subgroups` / `create_subgroup` - Navigate and build nested group structures
 - `get_group_members` / `add_user_to_group` - Membership management
 - `get_user_groups` / `remove_user_from_group` - User group associations
 
@@ -157,6 +162,12 @@ Complete authentication flow control:
 - `create_execution` / `delete_execution` - Execution lifecycle
 - `get_authenticator_config` / `create_authenticator_config` - Configuration management
 - `get_required_actions` / `update_required_action` - Required actions control
+
+### Attack Detection
+Brute force protection and security monitoring:
+- `get_user_brute_force_status` - Monitor failed login attempts and lockout status
+- `clear_user_login_failures` - Release individual locked users
+- `clear_all_login_failures` - Bulk unlock all temporarily disabled users
 
 ## Usage
 

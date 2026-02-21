@@ -1,25 +1,37 @@
 """
-Integration tests for enhanced User Management features.
+Integration tests for user management tools.
 
-These tests cover the new parameters added to user tools.
+These tests cover all user-related functionality including CRUD operations,
+advanced search, password management, sessions, and user lifecycle features.
 """
 
 import pytest
+import uuid
 from src.tools.user_tools import (
     list_users,
     create_user,
     update_user,
     delete_user,
     get_user,
+    reset_user_password,
+    get_user_sessions,
+    logout_user,
+    count_users,
 )
 from src.tools.group_tools import create_group, delete_group, list_groups
 from src.tools.role_tools import create_realm_role, delete_realm_role
 
 
+@pytest.fixture
+def unique_username():
+    """Generate a unique username for testing."""
+    return f"test-user-{uuid.uuid4().hex[:8]}"
+
+
 @pytest.fixture(scope="module")
 async def test_group():
     """Create a test group for user assignment tests."""
-    group_name = "test-group-enhanced"
+    group_name = "test-group-users"
     await create_group(name=group_name)
     yield group_name
     # Cleanup
@@ -34,8 +46,8 @@ async def test_group():
 @pytest.fixture(scope="module")
 async def test_role():
     """Create a test role for user assignment tests."""
-    role_name = "test-role-enhanced"
-    await create_realm_role(name=role_name, description="Test role for enhancements")
+    role_name = "test-role-users"
+    await create_realm_role(name=role_name, description="Test role for user tests")
     yield role_name
     # Cleanup
     try:
@@ -45,10 +57,137 @@ async def test_role():
 
 
 @pytest.mark.integration
-class TestEnhancedUserSearch:
-    """Test enhanced user search capabilities."""
+class TestUserCRUD:
+    """Test basic user CRUD operations."""
 
-    async def test_list_users_with_exact_match(self):
+    async def test_create_and_delete_user(self, unique_username):
+        """Test creating and deleting a user."""
+        result = await create_user(
+            username=unique_username,
+            email=f"{unique_username}@example.com",
+            first_name="Test",
+            last_name="User",
+            enabled=True,
+        )
+        assert result["status"] == "created"
+
+        # Find user
+        users = await list_users(search=unique_username)
+        test_user = next((u for u in users if u["username"] == unique_username), None)
+        assert test_user is not None
+        user_id = test_user["id"]
+
+        try:
+            # Get user by ID
+            user = await get_user(user_id)
+            assert user["username"] == unique_username
+            assert user["email"] == f"{unique_username}@example.com"
+            assert user["firstName"] == "Test"
+            assert user["lastName"] == "User"
+        finally:
+            # Delete user
+            delete_result = await delete_user(user_id)
+            assert delete_result["status"] == "deleted"
+
+            # Verify deletion
+            users = await list_users(search=unique_username)
+            assert not any(u["username"] == unique_username for u in users)
+
+    async def test_update_user(self, unique_username):
+        """Test updating user attributes."""
+        # Create user
+        await create_user(
+            username=unique_username,
+            email=f"{unique_username}@example.com",
+            first_name="Original",
+            last_name="Name",
+            enabled=True,
+        )
+
+        users = await list_users(search=unique_username)
+        test_user = next((u for u in users if u["username"] == unique_username), None)
+        user_id = test_user["id"]
+
+        try:
+            # Update user
+            result = await update_user(
+                user_id=user_id,
+                first_name="Updated",
+                last_name="UserName",
+                email=f"updated-{unique_username}@example.com",
+            )
+            assert result["status"] == "updated"
+
+            # Verify update
+            user = await get_user(user_id)
+            assert user["firstName"] == "Updated"
+            assert user["lastName"] == "UserName"
+            assert user["email"] == f"updated-{unique_username}@example.com"
+        finally:
+            await delete_user(user_id)
+
+    async def test_create_user_with_password(self, unique_username):
+        """Test creating a user with an initial password."""
+        result = await create_user(
+            username=unique_username,
+            email=f"{unique_username}@example.com",
+            first_name="Test",
+            last_name="WithPassword",
+            enabled=True,
+            temporary_password="TestPassword123!",
+        )
+        assert result["status"] == "created"
+
+        users = await list_users(search=unique_username)
+        test_user = next((u for u in users if u["username"] == unique_username), None)
+        user_id = test_user["id"]
+
+        try:
+            user = await get_user(user_id)
+            assert user["username"] == unique_username
+            assert user["enabled"] is True
+        finally:
+            await delete_user(user_id)
+
+
+@pytest.mark.integration
+class TestUserSearch:
+    """Test user listing and search capabilities."""
+
+    async def test_list_users(self):
+        """Test listing users."""
+        users = await list_users(max=10)
+        assert isinstance(users, list)
+
+    async def test_list_users_with_search(self, unique_username):
+        """Test listing users with search filter."""
+        # Create user
+        await create_user(
+            username=unique_username,
+            email=f"{unique_username}@example.com",
+            first_name="Searchable",
+            last_name="User",
+            enabled=True,
+        )
+
+        users = await list_users(search=unique_username)
+        test_user = next((u for u in users if u["username"] == unique_username), None)
+        user_id = test_user["id"]
+
+        try:
+            # Search should find our user
+            assert test_user is not None
+            assert test_user["username"] == unique_username
+        finally:
+            await delete_user(user_id)
+
+    async def test_count_users(self):
+        """Test counting users."""
+        count = await count_users()
+        assert isinstance(count, int)
+        assert count >= 0
+
+    async def test_exact_match_search(self):
         """Test exact matching for user searches."""
         # Create test users
         user1 = "exacttest"
@@ -73,7 +212,7 @@ class TestEnhancedUserSearch:
                 if user["username"] in [user1, user2]:
                     await delete_user(user["id"])
 
-    async def test_list_users_with_name_filters(self):
+    async def test_name_filters(self):
         """Test first_name and last_name filters."""
         username = "namefiltertest"
         await create_user(
@@ -106,7 +245,7 @@ class TestEnhancedUserSearch:
             if users:
                 await delete_user(users[0]["id"])
 
-    async def test_list_users_with_email_verified_filter(self):
+    async def test_email_verified_filter(self):
         """Test email_verified filter."""
         username_verified = "emailverifiedtest"
         username_unverified = "emailunverifiedtest"
@@ -143,7 +282,7 @@ class TestEnhancedUserSearch:
                 if users:
                     await delete_user(users[0]["id"])
 
-    async def test_list_users_with_brief_representation(self):
+    async def test_brief_representation(self):
         """Test brief representation parameter."""
         username = "briefreptest"
         await create_user(
@@ -172,10 +311,36 @@ class TestEnhancedUserSearch:
             if users:
                 await delete_user(users[0]["id"])
 
+    async def test_custom_attribute_query(self):
+        """Test searching users by custom attributes using q parameter."""
+        username = "customattrtest"
+
+        # Create user with custom attributes
+        await create_user(
+            username=username,
+            email=f"{username}@test.com",
+            attributes={
+                "department": ["Engineering"],
+                "team": ["Backend"],
+                "employee_id": ["EMP123"],
+            },
+        )
+
+        try:
+            # Search by custom attribute
+            # Note: This feature depends on Keycloak configuration
+            users = await list_users(q="department:Engineering")
+            assert isinstance(users, list)
+        finally:
+            # Cleanup
+            users = await list_users(username=username)
+            if users:
+                await delete_user(users[0]["id"])
+
 
 @pytest.mark.integration
-class TestEnhancedUserCreation:
-    """Test enhanced user creation with groups and roles."""
+class TestUserLifecycle:
+    """Test user lifecycle features including required actions, groups, and roles."""
 
     async def test_create_user_with_required_actions(self):
         """Test creating a user with required actions."""
@@ -219,9 +384,6 @@ class TestEnhancedUserCreation:
             # Verify user was created
             users = await list_users(username=username)
             assert len(users) == 1
-
-            # Note: Group assignment during creation might require additional
-            # API calls depending on Keycloak version
         finally:
             # Cleanup
             users = await list_users(username=username)
@@ -242,19 +404,11 @@ class TestEnhancedUserCreation:
             # Verify user was created
             users = await list_users(username=username)
             assert len(users) == 1
-
-            # Note: Role assignment during creation might require additional
-            # API calls depending on Keycloak version
         finally:
             # Cleanup
             users = await list_users(username=username)
             if users:
                 await delete_user(users[0]["id"])
-
-
-@pytest.mark.integration
-class TestEnhancedUserUpdate:
-    """Test enhanced user update capabilities."""
 
     async def test_update_user_with_required_actions(self):
         """Test updating a user with required actions."""
@@ -281,7 +435,7 @@ class TestEnhancedUserUpdate:
             # Cleanup
             await delete_user(user_id)
 
-    async def test_update_user_clear_required_actions(self):
+    async def test_clear_required_actions(self):
         """Test clearing required actions from a user."""
         username = "clearactionstest"
 
@@ -308,35 +462,80 @@ class TestEnhancedUserUpdate:
 
 
 @pytest.mark.integration
-class TestCustomAttributeQuery:
-    """Test custom attribute query functionality."""
+class TestUserPasswordManagement:
+    """Test user password operations."""
 
-    async def test_search_users_with_custom_attributes(self):
-        """Test searching users by custom attributes using q parameter."""
-        username = "customattrtest"
-
-        # Create user with custom attributes
+    async def test_reset_user_password(self, unique_username):
+        """Test resetting a user password."""
+        # Create user
         await create_user(
-            username=username,
-            email=f"{username}@test.com",
-            attributes={
-                "department": ["Engineering"],
-                "team": ["Backend"],
-                "employee_id": ["EMP123"],
-            },
+            username=unique_username,
+            email=f"{unique_username}@example.com",
+            first_name="Password",
+            last_name="Reset",
+            enabled=True,
         )
 
-        try:
-            # Search by custom attribute
-            # Note: This feature depends on Keycloak configuration
-            # and may require custom attribute indexing
-            users = await list_users(q="department:Engineering")
+        users = await list_users(search=unique_username)
+        test_user = next((u for u in users if u["username"] == unique_username), None)
+        user_id = test_user["id"]
 
-            # The query parameter behavior depends on Keycloak configuration
-            # This test documents the expected API parameter
-            assert isinstance(users, list)
+        try:
+            # Reset password
+            result = await reset_user_password(
+                user_id=user_id,
+                password="NewPassword456!",
+                temporary=False,
+            )
+            assert result["status"] == "success"
         finally:
-            # Cleanup
-            users = await list_users(username=username)
-            if users:
-                await delete_user(users[0]["id"])
+            await delete_user(user_id)
+
+
+@pytest.mark.integration
+class TestUserSessions:
+    """Test user session operations."""
+
+    async def test_get_user_sessions(self, unique_username):
+        """Test getting user sessions."""
+        # Create user
+        await create_user(
+            username=unique_username,
+            email=f"{unique_username}@example.com",
+            first_name="Session",
+            last_name="User",
+            enabled=True,
+        )
+
+        users = await list_users(search=unique_username)
+        test_user = next((u for u in users if u["username"] == unique_username), None)
+        user_id = test_user["id"]
+
+        try:
+            # Get sessions (likely empty for new user)
+            sessions = await get_user_sessions(user_id)
+            assert isinstance(sessions, list)
+        finally:
+            await delete_user(user_id)
+
+    async def test_logout_user(self, unique_username):
+        """Test logging out a user."""
+        # Create user
+        await create_user(
+            username=unique_username,
+            email=f"{unique_username}@example.com",
+            first_name="Logout",
+            last_name="User",
+            enabled=True,
+        )
+
+        users = await list_users(search=unique_username)
+        test_user = next((u for u in users if u["username"] == unique_username), None)
+        user_id = test_user["id"]
+
+        try:
+            # Logout user (should work even with no active sessions)
+            result = await logout_user(user_id)
+            assert result["status"] == "success"
+        finally:
+            await delete_user(user_id)
