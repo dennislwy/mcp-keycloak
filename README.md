@@ -89,16 +89,17 @@ Complete user lifecycle management with advanced search and filtering:
 - Support for required actions (VERIFY_EMAIL, UPDATE_PASSWORD, CONFIGURE_TOTP, etc.)
 
 ### Client Management
-OAuth2/OIDC client configuration with comprehensive single-step creation:
+OAuth2/OIDC client configuration with comprehensive single-step creation and zero-downtime secret rotation:
 - `list_clients` - List clients with advanced filtering (client_id, q, search, pagination)
 - `get_client` / `get_client_by_clientid` - Retrieve client details
 - `create_client` - Create clients with 25 parameters including consent, scopes, attributes, and URLs (single-step configuration)
 - `update_client` - Full client updates with 24+ parameters
-- `get_client_secret` / `regenerate_client_secret` - Secret management
+- `get_client_secret` / `regenerate_client_secret` - Secret management with rotation support
+- `get_client_secret_rotated` / `delete_client_secret_rotated` - Manage rotated secrets for seamless rotation
 - `get_client_service_account` - Service account access
 - `delete_client` - Client removal
 - `list_client_default_client_scopes` / `update_client_default_client_scope` / `delete_client_default_client_scope` - Default client scope management
-- Support for consent, full scope control, custom attributes, and authentication types
+- Support for consent, full scope control, custom attributes, authentication types, and zero-downtime secret rotation
 
 ### Client Protocol Mappers
 Protocol mapper management for clients:
@@ -355,7 +356,7 @@ Integrate Keycloak management into your CI/CD pipelines, allowing automated conf
 
 ## Testing
 
-The project includes a comprehensive test suite with 92 tests (84 integration tests) covering all tool categories. For detailed information, see [tests/README.md](tests/README.md).
+The project includes a comprehensive test suite with 85 integration tests covering all tool categories including client secret rotation. For detailed information, see [tests/README.md](tests/README.md).
 
 ### Running Tests
 

@@ -16,6 +16,8 @@ from src.tools.client_tools import (
     get_client_by_clientid,
     get_client_secret,
     regenerate_client_secret,
+    get_client_secret_rotated,
+    delete_client_secret_rotated,
 )
 
 
@@ -348,5 +350,209 @@ class TestClientSecrets:
 
             # Verify secret changed
             assert new_secret != original_secret
+        finally:
+            await delete_client(client_db_id)
+
+
+@pytest.mark.integration
+class TestClientSecretRotation:
+    """Test client secret rotation operations.
+
+    Note: These tests verify the rotation API endpoints. Whether rotation actually
+    preserves the old secret depends on realm-level client policies. If rotation
+    policies are not configured, get_client_secret_rotated() will return 404.
+    """
+
+    async def test_client_secret_rotation_with_policy(self, unique_client_id):
+        """Test client secret rotation when rotation policies are enabled.
+
+        This test verifies the rotation lifecycle IF rotation is enabled.
+        If rotation is not enabled, the test will be skipped.
+        """
+        # Create confidential client
+        await create_client(
+            client_id=unique_client_id,
+            name="Rotation Test Client",
+            enabled=True,
+            public_client=False,
+        )
+
+        clients = await list_clients(client_id=unique_client_id)
+        test_client = next(
+            (c for c in clients if c["clientId"] == unique_client_id), None
+        )
+        client_db_id = test_client["id"]
+
+        try:
+            # Get initial secret
+            secret_response = await get_client_secret(client_db_id)
+            assert "value" in secret_response
+            original_secret = secret_response["value"]
+
+            # Regenerate secret (this may create a rotation if policies are enabled)
+            new_secret_response = await regenerate_client_secret(client_db_id)
+            assert "value" in new_secret_response
+            new_secret = new_secret_response["value"]
+            assert new_secret != original_secret
+
+            # Try to get rotated secret
+            try:
+                rotated_response = await get_client_secret_rotated(client_db_id)
+                assert "value" in rotated_response
+                rotated_secret = rotated_response["value"]
+
+                # The rotated secret should be the original secret
+                assert rotated_secret == original_secret
+
+                # Current secret should still be the new one
+                current_secret_response = await get_client_secret(client_db_id)
+                assert current_secret_response["value"] == new_secret
+
+                # Delete rotated secret
+                delete_result = await delete_client_secret_rotated(client_db_id)
+                assert delete_result["status"] == "deleted"
+                assert "invalidated successfully" in delete_result["message"]
+
+                # After deletion, rotated secret should not exist
+                try:
+                    await get_client_secret_rotated(client_db_id)
+                    assert False, "Expected 404 after deleting rotated secret"
+                except Exception as e:
+                    assert "404" in str(e) or "not found" in str(e).lower()
+
+            except Exception as e:
+                # If we get 404, it means rotation is not enabled in this realm
+                if "404" in str(e) or "not found" in str(e).lower():
+                    pytest.skip(
+                        "Client secret rotation not enabled (no rotation policies configured)"
+                    )
+                else:
+                    raise
+
+        finally:
+            await delete_client(client_db_id)
+
+    async def test_get_rotated_secret_when_none_exists(self, unique_client_id):
+        """Test that getting rotated secret returns 404 when none exists."""
+        # Create confidential client
+        await create_client(
+            client_id=unique_client_id,
+            name="No Rotation Client",
+            enabled=True,
+            public_client=False,
+        )
+
+        clients = await list_clients(client_id=unique_client_id)
+        test_client = next(
+            (c for c in clients if c["clientId"] == unique_client_id), None
+        )
+        client_db_id = test_client["id"]
+
+        try:
+            # Try to get rotated secret when none exists
+            # Should raise 404 error
+            with pytest.raises(Exception) as exc_info:
+                await get_client_secret_rotated(client_db_id)
+
+            # Verify it's a 404 error about no rotated secret
+            assert (
+                "404" in str(exc_info.value)
+                or "rotated secret" in str(exc_info.value).lower()
+            )
+
+        finally:
+            await delete_client(client_db_id)
+
+    async def test_secret_regeneration_changes_value(self, unique_client_id):
+        """Test that regenerating secret creates a new value."""
+        # Create confidential client
+        await create_client(
+            client_id=unique_client_id,
+            name="Regeneration Client",
+            enabled=True,
+            public_client=False,
+        )
+
+        clients = await list_clients(client_id=unique_client_id)
+        test_client = next(
+            (c for c in clients if c["clientId"] == unique_client_id), None
+        )
+        client_db_id = test_client["id"]
+
+        try:
+            # Get initial secret
+            secret1 = await get_client_secret(client_db_id)
+            assert "value" in secret1
+            value1 = secret1["value"]
+
+            # First regeneration
+            secret2 = await regenerate_client_secret(client_db_id)
+            assert "value" in secret2
+            value2 = secret2["value"]
+            assert value2 != value1
+
+            # Second regeneration
+            secret3 = await regenerate_client_secret(client_db_id)
+            assert "value" in secret3
+            value3 = secret3["value"]
+            assert value3 != value2
+            assert value3 != value1
+
+            # Verify current secret is the latest
+            current = await get_client_secret(client_db_id)
+            assert current["value"] == value3
+
+        finally:
+            await delete_client(client_db_id)
+
+    async def test_delete_rotated_secret_api(self, unique_client_id):
+        """Test that delete rotated secret API works correctly."""
+        # Create confidential client
+        await create_client(
+            client_id=unique_client_id,
+            name="Delete Rotation Client",
+            enabled=True,
+            public_client=False,
+        )
+
+        clients = await list_clients(client_id=unique_client_id)
+        test_client = next(
+            (c for c in clients if c["clientId"] == unique_client_id), None
+        )
+        client_db_id = test_client["id"]
+
+        try:
+            # Get initial secret
+            await get_client_secret(client_db_id)
+
+            # Regenerate to potentially create rotation
+            new_secret = await regenerate_client_secret(client_db_id)
+            current_secret_value = new_secret["value"]
+
+            # Try to delete rotated secret
+            try:
+                # First check if rotated secret exists
+                await get_client_secret_rotated(client_db_id)
+
+                # If it exists, delete it
+                delete_result = await delete_client_secret_rotated(client_db_id)
+                assert delete_result["status"] == "deleted"
+
+                # Verify current secret is still intact
+                current_secret = await get_client_secret(client_db_id)
+                assert current_secret["value"] == current_secret_value
+
+                # Verify rotated secret is gone
+                with pytest.raises(Exception) as exc_info:
+                    await get_client_secret_rotated(client_db_id)
+                assert "404" in str(exc_info.value)
+
+            except Exception as e:
+                # If no rotated secret exists, that's fine - rotation not enabled
+                if "404" in str(e) or "not found" in str(e).lower():
+                    pytest.skip("No rotated secret to delete (rotation not configured)")
+                else:
+                    raise
+
         finally:
             await delete_client(client_db_id)

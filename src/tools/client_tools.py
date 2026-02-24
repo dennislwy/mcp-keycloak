@@ -437,16 +437,76 @@ async def regenerate_client_secret(
     """
     Regenerate the client secret.
 
+    When client secret rotation is enabled via client policies, this operation
+    will preserve the old secret as a "rotated secret" that remains valid for
+    a grace period. This allows seamless secret rotation without downtime.
+
+    The old secret can be retrieved via get_client_secret_rotated() and
+    invalidated via delete_client_secret_rotated().
+
+    Note: Secret rotation behavior is controlled by realm-level client policies.
+    If rotation policies are not configured, the old secret is immediately
+    invalidated.
+
     Args:
         id: The client's database ID
         realm: Target realm (uses default if not specified)
 
     Returns:
         New client secret object
+
+    See Also:
+        - get_client_secret_rotated() - Retrieve the previous secret
+        - delete_client_secret_rotated() - Invalidate the previous secret
     """
     return await client._make_request(
         "POST", f"/clients/{id}/client-secret", realm=realm
     )
+
+
+@mcp.tool()
+async def get_client_secret_rotated(
+    id: str, realm: Optional[str] = None
+) -> Dict[str, Any]:
+    """
+    Get the rotated client secret (the previous secret after rotation).
+
+    Args:
+        id: The client's database ID
+        realm: Target realm (uses default if not specified)
+
+    Returns:
+        Rotated client secret credential object containing the previous secret
+    """
+    return await client._make_request(
+        "GET", f"/clients/{id}/client-secret/rotated", realm=realm
+    )
+
+
+@mcp.tool()
+async def delete_client_secret_rotated(
+    id: str, realm: Optional[str] = None
+) -> Dict[str, str]:
+    """
+    Invalidate the rotated client secret.
+
+    This removes the previous secret that was kept after rotation,
+    forcing all clients to use only the current secret.
+
+    Args:
+        id: The client's database ID
+        realm: Target realm (uses default if not specified)
+
+    Returns:
+        Status message
+    """
+    await client._make_request(
+        "DELETE", f"/clients/{id}/client-secret/rotated", realm=realm
+    )
+    return {
+        "status": "deleted",
+        "message": f"Rotated client secret for client {id} invalidated successfully",
+    }
 
 
 @mcp.tool()
