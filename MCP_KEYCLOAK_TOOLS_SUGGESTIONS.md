@@ -7,7 +7,7 @@
 - ✅ **Tested:** 39 (100%)
 - 🔧 **Enhanced:** User and Group tools with advanced parameters
 
-**Test Coverage:** 85 integration tests across 11 test files (all passing)
+**Test Coverage:** 89 integration tests across 11 test files (all passing)
 
 **Implementation Date:** 2025-02-14
 **Last Updated:** 2026-02-24
@@ -28,9 +28,9 @@
 | `regenerate_client_secret`           | POST   | `/client-secret`                         | Generate new secret (rotates old secret if policies configured)  | ✅           | ✅      |
 | `get_client_secret_rotated`          | GET    | `/client-secret/rotated`                 | Get the rotated (previous) client secret                         | ✅           | ✅      |
 | `delete_client_secret_rotated`       | DELETE | `/client-secret/rotated`                 | Invalidate the rotated client secret                             | ✅           | ✅      |
-| `list_client_default_client_scopes`  | GET    | `/default-client-scopes`                 | List default client scopes for a client                          | ✅           | ⏳      |
-| `update_client_default_client_scope` | PUT    | `/default-client-scopes/{clientScopeId}` | Update default client scope by ID for a client                   | ✅           | ⏳      |
-| `delete_client_default_client_scope` | DELETE | `/default-client-scopes/{clientScopeId}` | Delete default client scope by ID for a client                   | ✅           | ⏳      |
+| `list_client_default_client_scopes`  | GET    | `/default-client-scopes`                 | List default client scopes for a client                          | ✅           | ✅      |
+| `update_client_default_client_scope` | PUT    | `/default-client-scopes/{clientScopeId}` | Add default client scope to a client                             | ✅           | ✅      |
+| `delete_client_default_client_scope` | DELETE | `/default-client-scopes/{clientScopeId}` | Remove default client scope from a client                        | ✅           | ✅      |
 
 **Note:** Client secret rotation preserves the old secret as a "rotated secret" when rotation policies are configured at the realm level. This enables zero-downtime secret rotation by allowing both secrets to work during a transition period.
 

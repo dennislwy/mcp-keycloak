@@ -356,7 +356,7 @@ Integrate Keycloak management into your CI/CD pipelines, allowing automated conf
 
 ## Testing
 
-The project includes a comprehensive test suite with 85 integration tests covering all tool categories including client secret rotation. For detailed information, see [tests/README.md](tests/README.md).
+The project includes a comprehensive test suite with 89 integration tests covering all tool categories including client secret rotation and default scope management. For detailed information, see [tests/README.md](tests/README.md).
 
 ### Running Tests
 
