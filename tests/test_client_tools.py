@@ -18,6 +18,8 @@ from src.tools.client_tools import (
     regenerate_client_secret,
     get_client_secret_rotated,
     delete_client_secret_rotated,
+    get_client_management_permissions,
+    update_client_management_permissions,
 )
 
 
@@ -556,3 +558,214 @@ class TestClientSecretRotation:
 
         finally:
             await delete_client(client_db_id)
+
+
+@pytest.mark.integration
+class TestClientManagementPermissions:
+    """Test client management permissions operations.
+
+    Note: These tests require the admin-fine-grained-authz feature to be enabled
+    in Keycloak. If the feature is not available, tests will be skipped.
+    """
+
+    async def test_get_management_permissions_default_state(self, unique_client_id):
+        """Test getting management permissions for a newly created client."""
+        client_db_id = None
+
+        try:
+            # Create a test client
+            await create_client(
+                client_id=unique_client_id,
+                name="Permissions Test Client",
+                enabled=True,
+            )
+
+            # Find the client
+            clients = await list_clients(client_id=unique_client_id)
+            test_client = next(
+                (c for c in clients if c["clientId"] == unique_client_id), None
+            )
+            assert test_client is not None
+            client_db_id = test_client["id"]
+
+            # Try to get management permissions
+            try:
+                permissions = await get_client_management_permissions(client_db_id)
+                assert isinstance(permissions, dict)
+                assert "enabled" in permissions
+                # New clients typically have permissions disabled
+                assert permissions["enabled"] is False
+            except Exception as e:
+                # Feature not enabled - skip test
+                if "501" in str(e) or "feature not enabled" in str(e).lower():
+                    pytest.skip(
+                        "Management permissions feature not enabled (requires admin-fine-grained-authz)"
+                    )
+                else:
+                    raise
+
+        finally:
+            if client_db_id:
+                await delete_client(client_db_id)
+
+    async def test_enable_and_disable_management_permissions(self, unique_client_id):
+        """Test enabling and disabling management permissions."""
+        client_db_id = None
+
+        try:
+            # Create a test client
+            await create_client(
+                client_id=unique_client_id,
+                name="Permissions Toggle Client",
+                enabled=True,
+            )
+
+            # Find the client
+            clients = await list_clients(client_id=unique_client_id)
+            test_client = next(
+                (c for c in clients if c["clientId"] == unique_client_id), None
+            )
+            client_db_id = test_client["id"]
+
+            try:
+                # Get initial state (should be disabled)
+                initial_permissions = await get_client_management_permissions(
+                    client_db_id
+                )
+                assert initial_permissions["enabled"] is False
+
+                # Enable management permissions
+                enabled_result = await update_client_management_permissions(
+                    client_db_id, enabled=True
+                )
+                assert enabled_result["enabled"] is True
+                # When enabled, should have resource information
+                assert (
+                    "resource" in enabled_result or "resourceServerId" in enabled_result
+                )
+
+                # Verify it's enabled
+                check_enabled = await get_client_management_permissions(client_db_id)
+                assert check_enabled["enabled"] is True
+
+                # Disable management permissions
+                disabled_result = await update_client_management_permissions(
+                    client_db_id, enabled=False
+                )
+                assert disabled_result["enabled"] is False
+
+                # Verify it's disabled
+                check_disabled = await get_client_management_permissions(client_db_id)
+                assert check_disabled["enabled"] is False
+
+            except Exception as e:
+                if "501" in str(e) or "feature not enabled" in str(e).lower():
+                    pytest.skip(
+                        "Management permissions feature not enabled (requires admin-fine-grained-authz)"
+                    )
+                else:
+                    raise
+
+        finally:
+            if client_db_id:
+                await delete_client(client_db_id)
+
+    async def test_management_permissions_structure(self, unique_client_id):
+        """Test the structure of management permissions response."""
+        client_db_id = None
+
+        try:
+            # Create a test client
+            await create_client(
+                client_id=unique_client_id,
+                name="Permissions Structure Client",
+                enabled=True,
+            )
+
+            # Find the client
+            clients = await list_clients(client_id=unique_client_id)
+            test_client = next(
+                (c for c in clients if c["clientId"] == unique_client_id), None
+            )
+            client_db_id = test_client["id"]
+
+            try:
+                # Enable permissions to get full structure
+                enabled_result = await update_client_management_permissions(
+                    client_db_id, enabled=True
+                )
+
+                # Verify response structure
+                assert "enabled" in enabled_result
+                assert enabled_result["enabled"] is True
+
+                # When enabled, should contain resource server information
+                # The exact field name may be 'resource' or 'resourceServerId'
+                has_resource_info = (
+                    "resource" in enabled_result or "resourceServerId" in enabled_result
+                )
+                assert has_resource_info, (
+                    "Expected resource information when permissions are enabled"
+                )
+
+                # Clean up by disabling
+                await update_client_management_permissions(client_db_id, enabled=False)
+
+            except Exception as e:
+                if "501" in str(e) or "feature not enabled" in str(e).lower():
+                    pytest.skip(
+                        "Management permissions feature not enabled (requires admin-fine-grained-authz)"
+                    )
+                else:
+                    raise
+
+        finally:
+            if client_db_id:
+                await delete_client(client_db_id)
+
+    async def test_management_permissions_persistence(self, unique_client_id):
+        """Test that management permissions persist after enabling."""
+        client_db_id = None
+
+        try:
+            # Create a test client
+            await create_client(
+                client_id=unique_client_id,
+                name="Permissions Persistence Client",
+                enabled=True,
+            )
+
+            # Find the client
+            clients = await list_clients(client_id=unique_client_id)
+            test_client = next(
+                (c for c in clients if c["clientId"] == unique_client_id), None
+            )
+            client_db_id = test_client["id"]
+
+            try:
+                # Enable permissions
+                await update_client_management_permissions(client_db_id, enabled=True)
+
+                # Get permissions multiple times to verify persistence
+                for _ in range(3):
+                    permissions = await get_client_management_permissions(client_db_id)
+                    assert permissions["enabled"] is True
+
+                # Disable and verify persistence of disabled state
+                await update_client_management_permissions(client_db_id, enabled=False)
+
+                for _ in range(3):
+                    permissions = await get_client_management_permissions(client_db_id)
+                    assert permissions["enabled"] is False
+
+            except Exception as e:
+                if "501" in str(e) or "feature not enabled" in str(e).lower():
+                    pytest.skip(
+                        "Management permissions feature not enabled (requires admin-fine-grained-authz)"
+                    )
+                else:
+                    raise
+
+        finally:
+            if client_db_id:
+                await delete_client(client_db_id)

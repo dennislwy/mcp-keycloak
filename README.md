@@ -89,7 +89,7 @@ Complete user lifecycle management with advanced search and filtering:
 - Support for required actions (VERIFY_EMAIL, UPDATE_PASSWORD, CONFIGURE_TOTP, etc.)
 
 ### Client Management
-OAuth2/OIDC client configuration with comprehensive single-step creation and zero-downtime secret rotation:
+OAuth2/OIDC client configuration with comprehensive single-step creation, zero-downtime secret rotation, and fine-grained permissions:
 - `list_clients` - List clients with advanced filtering (client_id, q, search, pagination)
 - `get_client` / `get_client_by_clientid` - Retrieve client details
 - `create_client` - Create clients with 25 parameters including consent, scopes, attributes, and URLs (single-step configuration)
@@ -99,7 +99,8 @@ OAuth2/OIDC client configuration with comprehensive single-step creation and zer
 - `get_client_service_account` - Service account access
 - `delete_client` - Client removal
 - `list_client_default_client_scopes` / `update_client_default_client_scope` / `delete_client_default_client_scope` - Default client scope management
-- Support for consent, full scope control, custom attributes, authentication types, and zero-downtime secret rotation
+- `get_client_management_permissions` / `update_client_management_permissions` - Fine-grained authorization control
+- Support for consent, full scope control, custom attributes, authentication types, zero-downtime secret rotation, and delegated management
 
 ### Client Protocol Mappers
 Protocol mapper management for clients:
@@ -356,7 +357,7 @@ Integrate Keycloak management into your CI/CD pipelines, allowing automated conf
 
 ## Testing
 
-The project includes a comprehensive test suite with 89 integration tests covering all tool categories including client secret rotation and default scope management. For detailed information, see [tests/README.md](tests/README.md).
+The project includes a comprehensive test suite with 93 integration tests covering all tool categories including client secret rotation, default scope management, and fine-grained permissions. For detailed information, see [tests/README.md](tests/README.md).
 
 ### Running Tests
 

@@ -593,3 +593,54 @@ async def delete_client_default_client_scope(
         "status": "deleted",
         "message": f"Client scope {client_scope_id} removed from client {id} defaults",
     }
+
+
+@mcp.tool()
+async def get_client_management_permissions(
+    id: str, realm: Optional[str] = None
+) -> Dict[str, Any]:
+    """
+    Get management permissions for a client.
+
+    Returns whether client authorization permissions have been initialized
+    and provides a reference to the resource server managing these permissions.
+
+    Args:
+        id: The client's database ID
+        realm: Target realm (uses default if not specified)
+
+    Returns:
+        Management permission reference object with 'enabled' status and
+        'resource' information if permissions are initialized
+    """
+    return await client._make_request(
+        "GET", f"/clients/{id}/management/permissions", realm=realm
+    )
+
+
+@mcp.tool()
+async def update_client_management_permissions(
+    id: str, enabled: bool, realm: Optional[str] = None
+) -> Dict[str, Any]:
+    """
+    Enable or disable management permissions for a client.
+
+    When enabled, Keycloak creates a resource server that allows fine-grained
+    authorization control over who can manage this client. This is useful for
+    delegating client management to non-admin users.
+
+    Args:
+        id: The client's database ID
+        enabled: Whether to enable (True) or disable (False) management permissions
+        realm: Target realm (uses default if not specified)
+
+    Returns:
+        Updated management permission reference object with 'enabled' status
+        and 'resource' information if permissions are enabled
+    """
+    return await client._make_request(
+        "PUT",
+        f"/clients/{id}/management/permissions",
+        data={"enabled": enabled},
+        realm=realm,
+    )

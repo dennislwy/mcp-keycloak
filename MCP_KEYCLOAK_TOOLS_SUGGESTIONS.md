@@ -2,12 +2,12 @@
 
 ## Implementation Status
 
-**Total Tools:** 39
-- ✅ **Implemented:** 39 (100%)
-- ✅ **Tested:** 39 (100%)
+**Total Tools:** 41
+- ✅ **Implemented:** 41 (100%)
+- ✅ **Tested:** 41 (100%)
 - 🔧 **Enhanced:** User and Group tools with advanced parameters
 
-**Test Coverage:** 89 integration tests across 11 test files (all passing)
+**Test Coverage:** 93 integration tests across 11 test files (all passing)
 
 **Implementation Date:** 2025-02-14
 **Last Updated:** 2026-02-24
@@ -31,8 +31,12 @@
 | `list_client_default_client_scopes`  | GET    | `/default-client-scopes`                 | List default client scopes for a client                          | ✅           | ✅      |
 | `update_client_default_client_scope` | PUT    | `/default-client-scopes/{clientScopeId}` | Add default client scope to a client                             | ✅           | ✅      |
 | `delete_client_default_client_scope` | DELETE | `/default-client-scopes/{clientScopeId}` | Remove default client scope from a client                        | ✅           | ✅      |
+| `get_client_management_permissions`  | GET    | `/management/permissions`                | Get management permissions status for a client                   | ✅           | ✅      |
+| `update_client_management_permissions`| PUT   | `/management/permissions`                | Enable/disable fine-grained management permissions               | ✅           | ✅      |
 
-**Note:** Client secret rotation preserves the old secret as a "rotated secret" when rotation policies are configured at the realm level. This enables zero-downtime secret rotation by allowing both secrets to work during a transition period.
+**Notes:**
+- **Client secret rotation** preserves the old secret as a "rotated secret" when rotation policies are configured at the realm level. This enables zero-downtime secret rotation by allowing both secrets to work during a transition period.
+- **Management permissions** require the `admin-fine-grained-authz` feature to be enabled in Keycloak. When enabled, these tools allow delegating client management to non-admin users through fine-grained authorization.
 
 ## Client Protocol Mappers
 **Tool File:** `client_protocol_mapper_tools.py`  
