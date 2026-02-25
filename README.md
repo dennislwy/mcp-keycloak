@@ -180,6 +180,10 @@ Brute force protection and security monitoring:
 - `clear_user_login_failures` - Release individual locked users
 - `clear_all_login_failures` - Bulk unlock all temporarily disabled users
 
+### General Server Operations
+Server-wide information and monitoring:
+- `get_server_info` - Get comprehensive server information including version, memory, features, themes, providers, and system metadata
+
 ## Usage
 
 ### Running the Server
@@ -362,7 +366,7 @@ Integrate Keycloak management into your CI/CD pipelines, allowing automated conf
 
 ## Testing
 
-The project includes a comprehensive test suite with 104 integration tests covering all tool categories including OIDC protocol operations, client secret rotation, default scope management, and fine-grained permissions. For detailed information, see [tests/README.md](tests/README.md).
+The project includes a comprehensive test suite with 111 integration tests covering all tool categories including server information, OIDC protocol operations, client secret rotation, default scope management, and fine-grained permissions. For detailed information, see [tests/README.md](tests/README.md).
 
 ### Running Tests
 

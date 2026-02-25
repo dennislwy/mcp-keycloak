@@ -2,12 +2,12 @@
 
 ## Implementation Status
 
-**Total Tools:** 46
-- ✅ **Implemented:** 46 (100%)
-- ✅ **Tested:** 46 (100%)
+**Total Tools:** 47
+- ✅ **Implemented:** 47 (100%)
+- ✅ **Tested:** 47 (100%)
 - 🔧 **Enhanced:** User and Group tools with advanced parameters
 
-**Test Coverage:** 104 integration tests across 11 test files (all passing)
+**Test Coverage:** 111 integration tests across 12 test files (all passing)
 
 **Implementation Date:** 2025-02-14
 **Last Updated:** 2026-02-24
@@ -119,8 +119,16 @@
 | `get_certs`                  | GET    | `/certs`                      | Get JSON Web Key Set (JWKS) for token signature verification. Returns public keys used to sign JWTs.                                                                                                   | ✅           | ✅      |
 | `get_openid_configuration`   | GET    | `/.well-known/openid-configuration` | Get OpenID Connect Discovery document with all OIDC endpoints, supported features, and capabilities. Returns issuer, endpoints, grant types, scopes, and algorithms.                                   | ✅           | ✅      |
 
+## General Server Operations
+**Tool File:** `general_tools.py`
+**Base URL Path:** `/admin/serverinfo`
+
+| Tool Name         | Method | Endpoint | Purpose                                                                                                                                                                                                | Implemented | Tested |
+| ----------------- | ------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------- | ------ |
+| `get_server_info` | GET    |          | Get comprehensive Keycloak server information including system info, memory info, profile info, features, themes, providers, protocols, and other server metadata. Server-level endpoint (no realm). | ✅           | ✅      |
+
 ## Attack Detection
-**Tool File:** `attack_detection_tools.py`  
+**Tool File:** `attack_detection_tools.py`
 **Base URL Path:** `/admin/realms/{realm}/attack-detection/brute-force`
 
 | Tool Name                     | Method | Endpoint          | Purpose                                                                        | Implemented | Tested |
