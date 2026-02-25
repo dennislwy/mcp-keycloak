@@ -7,7 +7,7 @@ from pathlib import Path
 
 def test_can_import_main():
     """Test that we can import the main module"""
-    from src.main import main, OriginValidationMiddleware
+    from src.main import OriginValidationMiddleware, main
 
     assert main is not None
     assert OriginValidationMiddleware is not None

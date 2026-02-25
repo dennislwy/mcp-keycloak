@@ -5,35 +5,33 @@ A Python MCP server for managing Keycloak identity and access management.
 Supports both stdio and HTTP transports.
 """
 
+import logging
 import os
 import sys
-import logging
+
 import uvicorn
-from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import Response
-from .common.server import mcp
 
 # Import all tool modules to register them with the MCP server
 from . import tools  # noqa: F401
-from .tools import user_tools  # noqa: F401
-from .tools import client_tools  # noqa: F401
-from .tools import realm_tools  # noqa: F401
-from .tools import role_tools  # noqa: F401
-from .tools import group_tools  # noqa: F401
-from .tools import client_scope_tools  # noqa: F401
-from .tools import protocol_mapper_tools  # noqa: F401
-from .tools import identity_provider_tools  # noqa: F401
-from .tools import user_federation_tools  # noqa: F401
-from .tools import events_tools  # noqa: F401
-from .tools import realm_operations_tools  # noqa: F401
-from .tools import client_sessions_tools  # noqa: F401
-from .tools import sessions_management_tools  # noqa: F401
-from .tools import organization_management_tools  # noqa: F401
-from .tools import attack_detection_tools  # noqa: F401
-from .tools import keys_management_tools  # noqa: F401
-from .tools import security_policies_tools  # noqa: F401
-from .tools import user_credentials_tools  # noqa: F401
+from .common.server import mcp
+from .tools import (
+    attack_detection_tools,  # noqa: F401
+    authentication_management_tools,  # noqa: F401
+    client_protocol_mapper_tools,  # noqa: F401
+    client_role_mapping_tools,  # noqa: F401
+    client_scope_protocol_mapper_tools,  # noqa: F401
+    client_scope_tools,  # noqa: F401
+    client_tools,  # noqa: F401
+    general_tools,  # noqa: F401
+    group_tools,  # noqa: F401
+    oidc_protocol_tools,  # noqa: F401
+    realm_tools,  # noqa: F401
+    role_tools,  # noqa: F401
+    user_tools,  # noqa: F401
+)
 
 # Configure logging
 logging.basicConfig(

@@ -13,7 +13,7 @@ Comprehensive integration tests for the Keycloak MCP Server covering all tool ca
 
 ## Overview
 
-The test suite contains **141 integration tests** organized into **16 test files**, providing comprehensive coverage of all Keycloak MCP tools. Tests verify functionality against a live Keycloak server.
+The test suite provides comprehensive coverage of all Keycloak MCP tools. Tests verify functionality against a live Keycloak server.
 
 ### Test Philosophy
 
@@ -28,52 +28,37 @@ The test suite contains **141 integration tests** organized into **16 test files
 
 ```
 tests/
+├── test_attack_detection_tools.py          # Attack detection & brute force protection (7 tests)
+├── test_client_protocol_mapper_tools.py    # Client protocol mappers (5 tests)
+├── test_client_role_mapping_tools.py       # Client role mappings for groups (5 tests)
+├── test_client_scope_protocol_mapper_tools.py # Client scope protocol mappers (5 tests)
+├── test_client_scope_tools.py              # Client scope management (4 tests)
+├── test_client_tools.py                    # Client CRUD & enhanced creation (11 tests)
 ├── test_connection.py                      # Basic connectivity (4 tests)
-├── test_imports.py                        # Module imports (5 tests)
-├── test_user_management.py                # User CRUD operations (9 tests)
-├── test_client_management.py              # OAuth2/OIDC clients (9 tests)
-├── test_client_scopes.py                  # Scope configuration (4 tests)
-├── test_protocol_mappers.py               # Token claim mapping (4 tests)
-├── test_role_management.py                # RBAC operations (5 tests)
-├── test_group_management.py               # Group hierarchy (7 tests)
-├── test_realm_administration.py           # Realm settings (7 tests)
-├── test_realm_operations.py               # Import/Export/Backup (15 tests)
-├── test_authentication_management.py      # Auth flows (10 tests)
-├── test_identity_providers_and_federation.py  # External auth (6 tests)
-├── test_events.py                         # Audit logging (14 tests)
-├── test_sessions_management.py            # Session control (9 tests)
-├── test_attack_detection.py               # Brute force protection (6 tests)
-├── test_keys_management.py                # Cryptographic keys (11 tests)
-├── test_security_policies.py              # Security configuration (16 tests)
-└── test_organization_management.py        # Multi-tenancy (8 tests)
+├── test_group_tools.py                     # Group management & hierarchy (11 tests)
+├── test_imports.py                         # Module imports (5 tests)
+├── test_oidc_protocol_tools.py             # OIDC token operations (10 tests)
+├── test_role_composites.py                 # Role composite operations (6 tests)
+└── test_user_tools.py                      # User management & lifecycle (19 tests)
 ```
 
 ### Test Categories
 
 | Category | File | Tests | Focus |
-|----------|------|-------|-------|
-| **Core Operations** | | | |
-| User Management | test_user_management.py | 9 | CRUD, passwords, sessions |
-| Client Management | test_client_management.py | 9 | OAuth2/OIDC configuration |
-| Role Management | test_role_management.py | 5 | RBAC, assignments |
-| Group Management | test_group_management.py | 7 | Hierarchies, memberships |
-| **Configuration** | | | |
-| Realm Administration | test_realm_administration.py | 7 | Settings, events, defaults |
-| Realm Operations | test_realm_operations.py | 15 | Import/Export, backup |
-| Client Scopes | test_client_scopes.py | 4 | Reusable scopes |
-| Protocol Mappers | test_protocol_mappers.py | 4 | Token customization |
-| **Authentication** | | | |
-| Authentication Flows | test_authentication_management.py | 10 | Flow configuration |
-| Identity Providers | test_identity_providers_and_federation.py | 6 | External auth (Google, OIDC, SAML) |
-| **Security** | | | |
-| Attack Detection | test_attack_detection.py | 6 | Brute force protection |
-| Keys Management | test_keys_management.py | 11 | Certificates, signing |
-| Security Policies | test_security_policies.py | 16 | Passwords, OTP, WebAuthn |
-| **Monitoring** | | | |
-| Events | test_events.py | 14 | Audit logs, tracking |
-| Sessions | test_sessions_management.py | 9 | Active sessions, timeouts |
-| **Advanced** | | | |
-| Organization Management | test_organization_management.py | 8 | Multi-tenancy (Keycloak 23+) |
+| -------- | ---- | ----- | ----- |
+| **User Management** | `test_user_tools.py` | 19 | User lifecycle, advanced search, required actions, groups/roles |
+| **Client Management** | `test_client_tools.py` | 11 | Client CRUD, enhanced creation with 25 params, OAuth2 settings |
+| **Group Management** | `test_group_tools.py` | 11 | Group lifecycle, hierarchy, subgroups, advanced search |
+| **OIDC Protocol** | `test_oidc_protocol_tools.py` | 10 | Token requests, introspection, grant types |
+| **Attack Detection** | `test_attack_detection_tools.py` | 7 | Brute force status, login failure management |
+| **Role Composites** | `test_role_composites.py` | 6 | Composite role management, realm/client composites |
+| **Client Protocol Mappers** | `test_client_protocol_mapper_tools.py` | 5 | Mapper lifecycle, bulk operations, protocol filtering |
+| **Client Role Mappings** | `test_client_role_mapping_tools.py` | 5 | Group role mappings, available/composite roles |
+| **Client Scope Mappers** | `test_client_scope_protocol_mapper_tools.py` | 5 | Scope mapper lifecycle, bulk operations |
+| **Module Imports** | `test_imports.py` | 5 | Module import verification |
+| **Client Scopes** | `test_client_scope_tools.py` | 4 | Client scope CRUD, attributes |
+| **Connectivity** | `test_connection.py` | 4 | Server connectivity, authentication |
+
 
 ## Prerequisites
 
@@ -142,10 +127,10 @@ uv run pytest --cov=src tests/
 
 ```bash
 # Single test file
-uv run pytest tests/test_user_management.py -v
+uv run pytest tests/test_connection.py -v
 
 # Multiple files
-uv run pytest tests/test_user_management.py tests/test_role_management.py -v
+uv run pytest tests/test_connection.py tests/test_imports.py -v
 ```
 
 ### Run Specific Tests
@@ -192,27 +177,20 @@ uv run pytest tests/ -n auto
 ### Coverage by README.md Tool Categories
 
 All tool categories listed in README.md have comprehensive test coverage:
+- ✅ User Management (19 tests) - CRUD, search, lifecycle, required actions
+- ✅ Client Management (11 tests) - CRUD, enhanced creation, OAuth2 settings
+- ✅ Group Management (11 tests) - Hierarchy, subgroups, advanced search
+- ✅ OIDC Protocol (10 tests) - Token operations, grant types
+- ✅ Attack Detection (7 tests) - Brute force protection, login failures
+- ✅ Role Composites (6 tests) - Composite roles, realm/client
+- ✅ Client Protocol Mappers (5 tests) - Mapper lifecycle, bulk operations
+- ✅ Client Role Mappings (5 tests) - Group role assignments
+- ✅ Client Scope Mappers (5 tests) - Scope mapper operations
+- ✅ Module Imports (5 tests) - Import verification
+- ✅ Client Scopes (4 tests) - Scope CRUD operations
+- ✅ Basic Connectivity (4 tests) - Authentication, server connection
 
-- ✅ User Management - 9 tests
-- ✅ Client Management - 9 tests
-- ✅ Client Scopes - 4 tests
-- ✅ Protocol Mappers - 4 tests
-- ✅ Identity Providers - 6 tests
-- ✅ User Federation - 3 tests (in test_identity_providers_and_federation.py)
-- ✅ Role Management - 5 tests
-- ✅ Group Management - 7 tests
-- ✅ Realm Administration - 7 tests
-- ✅ Realm Operations - 15 tests
-- ✅ Client Sessions Management - 4 tests (in test_realm_operations.py)
-- ✅ Authentication Management - 10 tests
-- ✅ Events Management - 14 tests
-- ✅ Sessions Management - 9 tests
-- ✅ Attack Detection & Brute Force Protection - 6 tests
-- ✅ Keys & Certificate Management - 11 tests
-- ✅ Security Policies & Configuration - 16 tests
-- ✅ Organization Management - 8 tests
-
-**Total: 141 tests covering 100% of README.md tool categories**
+**Total: 92 tests (84 integration tests) covering all major tool categories** (all passing ✅)
 
 ### What's Tested
 

@@ -1,5 +1,5 @@
 # Keycloak MCP Server 
-[![Python Version](https://img.shields.io/badge/python-3.13%2B-blue)](https://www.python.org/downloads/)
+[![Python Version](https://img.shields.io/badge/python-3.12%2B-blue)](https://www.python.org/downloads/)
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE.txt)
 [![smithery badge](https://smithery.ai/badge/@idoyudha/mcp-keycloak)](https://smithery.ai/server/@idoyudha/mcp-keycloak)
 [![Trust Score](https://archestra.ai/mcp-catalog/api/badge/quality/idoyudha/mcp-keycloak)](https://archestra.ai/mcp-catalog/idoyudha__mcp-keycloak)
@@ -55,7 +55,10 @@ Complete security policy configuration including password policies, OTP policies
 Multi-tenant organization management with domain verification and member control. Create and manage organizations, associate domains with automatic user assignment, manage organization members, and link identity providers for organization-specific authentication flows. (Requires Keycloak 23+ with organizations feature enabled)
 
 ### 🔄 Group Management
-Organize users into groups, manage group hierarchies, and handle group-based permissions efficiently.
+Organize users into groups, manage group hierarchies, handle group-based permissions efficiently, and navigate nested group structures.
+
+### 🛡️ Attack Detection & Security
+Monitor and manage brute force protection, clear login failures, and release temporarily locked users.
 
 ## Installation
 
@@ -104,19 +107,59 @@ CLIENT_SECRET=optional-client-secret
 The Keycloak MCP Server provides a comprehensive set of tools organized by functionality:
 
 ### User Management
-Complete user lifecycle management including:
-- `list_users` - List users with pagination and filtering
-- `create_user` / `update_user` / `delete_user` - Full CRUD operations
+Complete user lifecycle management with advanced search and filtering:
+- `list_users` - List users with pagination, exact matching, name filters, email verification status, custom attributes, and IDP filtering
+- `get_user` - Retrieve a single user by ID
+- `create_user` / `update_user` / `delete_user` - Full CRUD operations with group and role assignment
 - `reset_user_password` - Password management
 - `get_user_sessions` / `logout_user` - Session control
 - `count_users` - User statistics
+- Support for required actions (VERIFY_EMAIL, UPDATE_PASSWORD, CONFIGURE_TOTP, etc.)
 
 ### Client Management
-OAuth2/OIDC client configuration:
-- `list_clients` / `get_client` / `create_client` - Client operations
-- `get_client_secret` / `regenerate_client_secret` - Secret management
+OAuth2/OIDC client configuration with comprehensive single-step creation, zero-downtime secret rotation, fine-grained permissions, and optional scope management:
+- `list_clients` - List clients with advanced filtering (client_id, q, search, pagination)
+- `get_client` / `get_client_by_clientid` - Retrieve client details
+- `create_client` - Create clients with 25 parameters including consent, scopes, attributes, and URLs (single-step configuration)
+- `update_client` - Full client updates with 24+ parameters
+- `update_client_advanced` - Raw ClientRepresentation update for full control over any property
+- `delete_client` - Client removal
+- `get_client_secret` / `regenerate_client_secret` - Secret management with rotation support
+- `get_client_secret_rotated` / `delete_client_secret_rotated` - Manage rotated secrets for seamless rotation
 - `get_client_service_account` - Service account access
-- `update_client` / `delete_client` - Client modifications
+- `list_client_default_client_scopes` / `update_client_default_client_scope` / `delete_client_default_client_scope` - Default client scope management
+- `list_optional_client_scopes` / `add_optional_client_scope` / `delete_optional_client_scope` - Optional client scope management (use these dedicated endpoints — `update_client` does not persist optional scopes)
+- `get_client_management_permissions` / `update_client_management_permissions` - Fine-grained authorization control
+- Support for consent, full scope control, custom attributes, authentication types, zero-downtime secret rotation, and delegated management
+
+### Client Protocol Mappers
+Protocol mapper management for clients:
+- `list_client_protocol_mappers` / `get_client_protocol_mapper` - List and retrieve mappers
+- `create_client_protocol_mapper` / `update_client_protocol_mapper` - Mapper CRUD operations
+- `delete_client_protocol_mapper` - Remove protocol mappers
+- `create_client_protocol_mappers_bulk` - Bulk mapper creation
+- `get_client_protocol_mappers_by_protocol` - Filter mappers by protocol type
+
+### Client Scopes
+Client scope management:
+- `list_client_scopes` / `get_client_scope` - List and retrieve scopes
+- `create_client_scope` / `update_client_scope` - Scope CRUD operations
+- `delete_client_scope` - Remove client scopes
+
+### Client Scope Protocol Mappers
+Protocol mapper management for client scopes:
+- `list_client_scope_protocol_mappers` / `get_client_scope_protocol_mapper` - List and retrieve mappers
+- `create_client_scope_protocol_mapper` / `update_client_scope_protocol_mapper` - Mapper CRUD operations
+- `delete_client_scope_protocol_mapper` - Remove protocol mappers
+- `create_client_scope_protocol_mappers_bulk` - Bulk mapper creation
+- `get_client_scope_protocol_mappers_by_protocol` - Filter mappers by protocol type
+
+### Client Role Mappings
+Group and user client role mapping management:
+- `list_available_client_role_mappings` - List available client roles for groups/users
+- `list_composite_client_role_mappings` - List effective (composite) client role mappings
+- `get_client_role_mappings` - Retrieve current role mappings
+- `add_client_role_mappings` / `delete_client_role_mappings` - Manage role assignments
 
 ### Client Scopes
 Reusable scope configuration and token customization:
@@ -155,19 +198,19 @@ External user store integration:
 
 ### Role Management
 Fine-grained permission control:
-- `list_realm_roles` / `create_realm_role` - Realm role operations
+- `list_realm_roles` / `get_realm_role` / `create_realm_role` / `update_realm_role` / `delete_realm_role` - Full realm role CRUD
 - `list_client_roles` / `create_client_role` - Client-specific roles
 - `assign_realm_role_to_user` / `remove_realm_role_from_user` - Role assignments
 - `get_user_realm_roles` / `assign_client_role_to_user` - User role queries
+- `list_role_composites` / `add_role_composites` / `delete_role_composites` - Composite role management
+- `get_role_composites_realm` / `get_role_composites_clients` - Query composite role hierarchies
 
 ### Group Management
-Hierarchical user organization and role mappings:
-- `list_groups` / `create_group` / `update_group` - Group operations
-- `get_group_members` / `add_user_to_group` - Membership management
-- `get_user_groups` / `remove_user_from_group` - User group associations
-- `get_group_role_mappings` / `add_realm_roles_to_group` - Role assignments
-- `get_group_client_roles` / `add_client_roles_to_group` - Client role mappings
-- `copy_group_roles` - Role copying between groups
+Hierarchical user organization with advanced search and hierarchy support:
+- `list_groups` / `get_group` / `create_group` / `update_group` / `delete_group` - Full group CRUD with exact matching and hierarchy control
+- `list_subgroups` / `create_subgroup` - Navigate and build nested group structures
+- `get_group_members` / `add_user_to_group` / `remove_user_from_group` - Membership management
+- `get_user_groups` - List all groups a user belongs to
 
 ### Realm Administration
 System-wide configuration and operations:
@@ -176,7 +219,19 @@ System-wide configuration and operations:
 - `check_organizations_enabled` - Check if organizations feature is enabled
 - `enable_organizations` / `disable_organizations` - Toggle organizations feature (Keycloak 24+)
 - `get_realm_events_config` / `update_realm_events_config` - Event management
-- `add_realm_default_group` / `remove_realm_default_group` - Default settings
+- `get_realm_default_groups` / `add_realm_default_group` / `remove_realm_default_group` - Default group settings
+- `remove_all_user_sessions` - Invalidate all active sessions in a realm
+
+### OIDC Protocol
+Complete OAuth2/OpenID Connect protocol operations:
+- `request_token` - Request access tokens using various OAuth2 grant types (password, client_credentials, authorization_code, refresh_token)
+- `introspect_token` - Introspect tokens to validate state and retrieve metadata (RFC 7662 compliant)
+- `get_userinfo` - Retrieve user claims using Bearer token authentication
+- `revoke_token` - Revoke access or refresh tokens (RFC 7009 compliant)
+- `logout` - End user sessions and invalidate refresh tokens
+- `exchange_token` - Exchange a token for another targeting a different audience/service (RFC 8693 Token Exchange)
+- `get_certs` - Get JWKS for JWT signature verification
+- `get_openid_configuration` - Get OpenID Connect Discovery document with all endpoints and capabilities
 
 ### Realm Operations
 Complete realm lifecycle management:
@@ -195,14 +250,32 @@ Session monitoring and control:
 - `get_active_session_statistics` - Comprehensive session analytics
 
 ### Authentication Management
-Complete authentication flow control:
-- `list_authentication_flows` / `get_authentication_flow` - Flow management
-- `create_authentication_flow` / `update_authentication_flow` - Flow CRUD operations
-- `delete_authentication_flow` / `copy_authentication_flow` - Flow modifications
-- `get_flow_executions` / `update_flow_executions` - Execution management
-- `create_execution` / `delete_execution` - Execution lifecycle
-- `get_authenticator_config` / `create_authenticator_config` - Configuration management
-- `get_required_actions` / `update_required_action` - Required actions control
+Complete authentication flow and execution control:
+- `list_authentication_flows` / `get_authentication_flow` - Flow listing and retrieval
+- `create_authentication_flow` / `update_authentication_flow` / `delete_authentication_flow` - Flow CRUD
+- `copy_authentication_flow` - Duplicate an existing flow as a starting point
+- `get_flow_executions` / `update_flow_executions` - Manage execution ordering and requirements within a flow
+- `add_execution_to_flow` / `add_subflow_to_flow` - Add executions or nested sub-flows
+- `get_execution` / `delete_execution` - Execution retrieval and removal
+- `raise_execution_priority` / `lower_execution_priority` - Reorder executions within a flow
+- `create_execution` - Create a standalone execution with full configuration
+- `get_authenticator_config` / `create_authenticator_config` / `update_authenticator_config` / `delete_authenticator_config` - Authenticator configuration CRUD
+- `get_execution_config` / `update_execution_config` - Execution-level configuration management
+- `get_authenticator_providers` / `get_client_authenticator_providers` - List available authenticator providers
+- `get_provider_config_description` - Get configuration schema for a specific provider
+- `get_required_actions` / `get_required_action` / `update_required_action` - Required action management
+- `register_required_action` / `get_unregistered_required_actions` - Register new required action providers
+- `raise_required_action_priority` / `lower_required_action_priority` - Reorder required actions
+
+### Attack Detection
+Brute force protection and security monitoring:
+- `get_user_brute_force_status` - Monitor failed login attempts and lockout status
+- `clear_user_login_failures` - Release individual locked users
+- `clear_all_login_failures` - Bulk unlock all temporarily disabled users
+
+### General Server Operations
+Server-wide information and monitoring:
+- `get_server_info` - Get comprehensive server information including version, memory, features, themes, providers, and system metadata
 
 ### Events Management
 Comprehensive event tracking and auditing:
@@ -443,33 +516,7 @@ Integrate Keycloak management into your CI/CD pipelines, allowing automated conf
 
 ## Testing
 
-The project includes a comprehensive test suite with 189 integration tests covering all tool categories. For detailed information, see [tests/README.md](tests/README.md).
-
-### Prerequisites
-
-1. **Keycloak Server** - You need a running Keycloak server:
-   ```bash
-   # Quick start with Docker
-   docker run -p 8080:8080 \
-     -e KEYCLOAK_ADMIN=admin \
-     -e KEYCLOAK_ADMIN_PASSWORD=admin \
-     quay.io/keycloak/keycloak:latest start-dev
-   ```
-
-2. **Environment Configuration** - Create a `.env` file:
-   ```bash
-   cp .env.example .env
-   # Edit .env with your Keycloak credentials
-   ```
-
-3. **Install Dependencies**:
-   ```bash
-   # Using uv (recommended)
-   uv sync
-
-   # Or with pip
-   pip install -e ".[dev]"
-   ```
+The project includes a comprehensive test suite with 113 integration tests covering all tool categories including server information, OIDC protocol operations, client secret rotation, default and optional scope management, and fine-grained permissions. For detailed information, see [tests/README.md](tests/README.md).
 
 ### Running Tests
 
@@ -478,7 +525,7 @@ The project includes a comprehensive test suite with 189 integration tests cover
 uv run pytest tests/
 
 # Run specific test file
-uv run pytest tests/test_user_management.py -v
+uv run pytest tests/test_user_tools.py -v
 
 # Run with coverage
 uv run pytest --cov=src tests/
@@ -487,37 +534,9 @@ uv run pytest --cov=src tests/
 uv run pytest -m "not integration"
 ```
 
-### Test Coverage
-
-All tool categories have comprehensive test coverage:
-- ✅ User Management (9 tests)
-- ✅ User Credentials & Consents (14 tests)
-- ✅ Client Management (9 tests)
-- ✅ Role Management (5 tests)
-- ✅ Composite Roles (14 tests)
-- ✅ Group Management (7 tests)
-- ✅ Realm Administration (7 tests)
-- ✅ Realm Operations (15 tests)
-- ✅ Authentication Management (10 tests)
-- ✅ Identity Providers & Federation (6 tests)
-- ✅ Events Management (13 tests)
-- ✅ Sessions Management (9 tests)
-- ✅ Attack Detection (6 tests)
-- ✅ Keys Management (11 tests)
-- ✅ Security Policies (16 tests)
-- ✅ Organization Management (18 tests)
-- ✅ Client Scopes (4 tests)
-- ✅ Protocol Mappers (4 tests)
-- ✅ Connection & Import Tests (9 tests)
-
-**Total: 189 tests across 20 test files**
-**Pass Rate: 99.0% (187 passed, 2 skipped)**
-
-For troubleshooting, detailed setup instructions, and contribution guidelines, see [tests/README.md](tests/README.md).
-
 ## Requirements
 
-- Python 3.8 or higher
+- Python 3.12 or higher
 - Keycloak server (tested with Keycloak 18+)
 - Admin access to Keycloak realm
 
