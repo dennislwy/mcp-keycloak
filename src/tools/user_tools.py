@@ -8,7 +8,7 @@ client = KeycloakClient()
 
 @mcp.tool()
 async def list_users(
-    first: Optional[int] = None,
+    first: int | None = None,
     max: Optional[int] = None,
     search: Optional[str] = None,
     username: Optional[str] = None,
@@ -221,9 +221,7 @@ async def update_user(
     if required_actions is not None:
         current_user["requiredActions"] = required_actions
 
-    await client._make_request(
-        "PUT", f"/users/{user_id}", data=current_user, realm=realm
-    )
+    await client._make_request("PUT", f"/users/{user_id}", data=current_user, realm=realm)
     return {"status": "updated", "message": f"User {user_id} updated successfully"}
 
 
@@ -268,9 +266,7 @@ async def reset_user_password(
 
 
 @mcp.tool()
-async def get_user_sessions(
-    user_id: str, realm: Optional[str] = None
-) -> List[Dict[str, Any]]:
+async def get_user_sessions(user_id: str, realm: Optional[str] = None) -> List[Dict[str, Any]]:
     """
     Get active sessions for a user.
 
