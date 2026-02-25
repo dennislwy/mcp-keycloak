@@ -13,46 +13,19 @@ The Keycloak MCP Server bridges the gap between AI applications and Keycloak's p
 ## Features
 
 ### 🔐 Comprehensive User Management
-Complete user lifecycle management including creation, updates, deletion, password resets, session management, credentials management (list, delete, reorder priority), required actions, user consents, offline sessions, and bulk operations (password reset, attribute updates, required actions).
+Manage users lifecycle from creation to deletion, including password resets, session management, and user attribute updates.
 
 ### 🏢 Client Configuration
 Create and configure OAuth2/OIDC clients, manage client secrets, and handle service accounts programmatically.
 
-### 🎯 Client Scopes & Protocol Mappers
-Define reusable client scopes, create custom protocol mappers for token claims, and control what information is included in access tokens and ID tokens.
-
-### 🌐 Identity Providers
-Configure external identity providers (Google, Facebook, OIDC, SAML), manage attribute mappers, and handle federated user identities for seamless SSO integration.
-
-### 📁 User Federation
-Connect external user stores (LDAP, Kerberos), configure user storage providers, and manage attribute mappings for centralized user management.
-
 ### 👥 Role-Based Access Control
-Define and assign realm and client-specific roles, create composite roles combining multiple roles, manage role hierarchies, get effective roles including composites, and implement fine-grained access control with mixed realm and client role compositions.
+Define and assign realm and client-specific roles, manage user permissions, and implement fine-grained access control.
 
 ### 🏛️ Realm Administration
 Configure realm settings, manage default groups, handle event configurations, and control realm-wide policies.
 
 ### 🔐 Authentication Management
 Comprehensive authentication flow management including creating, updating, and deleting flows, managing executions, and configuring authenticators.
-
-### 📊 Events Management
-Track and audit user activities and administrative changes with comprehensive event logging. Query user events (login, logout, registration), admin events (configuration changes), and manage event retention policies.
-
-### 🔐 Sessions Management
-Comprehensive session control and monitoring across all clients and users. Monitor active sessions, configure session timeouts, track user activity by IP address, and perform emergency logout operations for security incidents.
-
-### 🛡️ Attack Detection & Brute Force Protection
-Advanced security monitoring and attack detection capabilities. Monitor failed login attempts, configure brute force protection settings, analyze attack patterns, and manage user lockouts for enhanced security.
-
-### 🔑 Keys & Certificate Management
-Comprehensive cryptographic keys and certificate management. Monitor key expiration, manage signing algorithms, export and validate certificates, and rotate realm keys for maintaining security.
-
-### ⚙️ Security Policies & Configuration
-Complete security policy configuration including password policies, OTP policies, WebAuthn settings, browser security headers, SMTP configuration, and comprehensive realm security settings.
-
-### 🏢 Organization Management
-Multi-tenant organization management with domain verification and member control. Create and manage organizations, associate domains with automatic user assignment, manage organization members, and link identity providers for organization-specific authentication flows. (Requires Keycloak 23+ with organizations feature enabled)
 
 ### 🔄 Group Management
 Organize users into groups, manage group hierarchies, handle group-based permissions efficiently, and navigate nested group structures.
@@ -161,41 +134,6 @@ Group and user client role mapping management:
 - `get_client_role_mappings` - Retrieve current role mappings
 - `add_client_role_mappings` / `delete_client_role_mappings` - Manage role assignments
 
-### Client Scopes
-Reusable scope configuration and token customization:
-- `list_client_scopes` / `get_client_scope` / `create_client_scope` - Scope CRUD
-- `update_client_scope` / `delete_client_scope` - Scope modifications
-- `get_realm_default_client_scopes` / `add_realm_default_client_scope` - Realm defaults
-- `get_realm_optional_client_scopes` / `add_realm_optional_client_scope` - Realm optional
-- `get_client_default_scopes` / `add_client_default_scope` - Client default scopes
-- `get_client_optional_scopes` / `add_client_optional_scope` - Client optional scopes
-
-### Protocol Mappers
-Token claim customization for clients and scopes:
-- `list_client_scope_protocol_mappers` / `create_client_scope_protocol_mapper` - Scope mappers
-- `list_client_protocol_mappers` / `create_client_protocol_mapper` - Client mappers
-- `update_client_scope_protocol_mapper` / `delete_client_scope_protocol_mapper` - Mapper CRUD
-- `add_client_scope_protocol_mappers` / `add_client_protocol_mappers` - Batch operations
-- `evaluate_client_scope_mappers` - Effective mapper evaluation
-- `create_user_attribute_mapper` / `create_role_mapper` / `create_audience_mapper` - Quick templates
-
-### Identity Providers
-External authentication provider integration:
-- `list_identity_providers` / `get_identity_provider` / `create_identity_provider` - Provider CRUD
-- `update_identity_provider` / `delete_identity_provider` - Provider management
-- `export_identity_provider` / `import_identity_provider_config` - Import/export
-- `list_identity_provider_mappers` / `create_identity_provider_mapper` - Mapper management
-- `get_user_federated_identities` / `add_user_federated_identity` - User identity linking
-- `create_google_identity_provider` / `create_oidc_identity_provider` - Convenience functions
-
-### User Federation
-External user store integration:
-- `list_components` / `get_component` / `create_component` - Component management
-- `update_component` / `delete_component` / `get_component_sub_types` - Component operations
-- `list_user_storage_providers` / `get_user_storage_credential_types` - Storage providers
-- `create_ldap_user_storage` / `create_kerberos_user_storage` - Provider setup
-- `get_ldap_mappers` / `create_ldap_attribute_mapper` - LDAP mapping
-
 ### Role Management
 Fine-grained permission control:
 - `list_realm_roles` / `get_realm_role` / `create_realm_role` / `update_realm_role` / `delete_realm_role` - Full realm role CRUD
@@ -213,11 +151,9 @@ Hierarchical user organization with advanced search and hierarchy support:
 - `get_user_groups` - List all groups a user belongs to
 
 ### Realm Administration
-System-wide configuration and operations:
-- `get_accessible_realms` / `list_realms` - List accessible realms
+System-wide configuration:
+- `get_accessible_realms` - List of accessible realms
 - `get_realm_info` / `update_realm_settings` - Realm configuration
-- `check_organizations_enabled` - Check if organizations feature is enabled
-- `enable_organizations` / `disable_organizations` - Toggle organizations feature (Keycloak 24+)
 - `get_realm_events_config` / `update_realm_events_config` - Event management
 - `get_realm_default_groups` / `add_realm_default_group` / `remove_realm_default_group` - Default group settings
 - `remove_all_user_sessions` - Invalidate all active sessions in a realm
@@ -232,22 +168,6 @@ Complete OAuth2/OpenID Connect protocol operations:
 - `exchange_token` - Exchange a token for another targeting a different audience/service (RFC 8693 Token Exchange)
 - `get_certs` - Get JWKS for JWT signature verification
 - `get_openid_configuration` - Get OpenID Connect Discovery document with all endpoints and capabilities
-
-### Realm Operations
-Complete realm lifecycle management:
-- `create_realm` / `delete_realm` - Realm creation and deletion
-- `import_realm` / `export_realm` - Full realm import/export
-- `partial_import_realm` / `partial_export_realm` - Selective import/export
-- `duplicate_realm` - Realm duplication with customization
-- `backup_realm` / `restore_realm_backup` - Backup and restore operations
-
-### Client Sessions Management
-Session monitoring and control:
-- `get_client_sessions` / `get_client_offline_sessions` - Session queries
-- `get_client_session_count` / `get_all_client_sessions_summary` - Statistics
-- `find_user_sessions_across_clients` / `find_sessions_by_ip` - Session search
-- `revoke_user_consent_for_client` / `cleanup_offline_sessions` - Session management
-- `get_active_session_statistics` - Comprehensive session analytics
 
 ### Authentication Management
 Complete authentication flow and execution control:
@@ -276,63 +196,6 @@ Brute force protection and security monitoring:
 ### General Server Operations
 Server-wide information and monitoring:
 - `get_server_info` - Get comprehensive server information including version, memory, features, themes, providers, and system metadata
-
-### Events Management
-Comprehensive event tracking and auditing:
-- `get_user_events` / `clear_user_events` - User event queries and management
-- `get_admin_events` / `clear_admin_events` - Admin event queries and management
-- `get_events_config` / `update_events_config` - Event configuration
-- `enable_user_events` / `enable_admin_events` - Convenience functions
-- `get_recent_login_events` / `get_recent_admin_changes` - Quick queries
-
-### Sessions Management
-Comprehensive session control and monitoring:
-- `get_realm_session_stats` / `get_realm_sessions_summary` - Realm-wide session analytics
-- `get_user_session_details` / `logout_user_sessions` - User session management
-- `find_user_sessions` / `get_sessions_by_client` - Session search and filtering
-- `get_session_configuration` / `update_session_configuration` - Timeout management
-- `monitor_active_sessions` / `logout_all_users` - Monitoring and control
-- `cleanup_inactive_sessions` - Session maintenance and analysis
-
-### Attack Detection & Brute Force Protection
-Advanced security monitoring and threat detection:
-- `get_user_brute_force_status` / `clear_user_login_failures` - User lockout management
-- `configure_brute_force_protection` / `get_brute_force_configuration` - Protection settings
-- `monitor_failed_login_attempts` / `get_failed_login_events` - Attack monitoring
-- `analyze_brute_force_patterns` / `get_brute_force_statistics` - Pattern analysis
-- `enable_brute_force_protection` / `get_security_monitoring_summary` - Security overview
-
-### Keys & Certificate Management
-Cryptographic keys and certificate operations:
-- `get_realm_keys` / `get_realm_certificates` - Key and certificate inventory
-- `analyze_key_security` / `monitor_key_expiration` - Security analysis
-- `get_key_providers` / `get_signing_algorithms` - Provider and algorithm management
-- `rotate_realm_keys` / `export_realm_certificate` - Key rotation and export
-- `get_client_certificates` / `validate_certificate_chain` - Certificate validation
-- `get_keys_summary` / `get_comprehensive_keys_report` - Comprehensive reporting
-
-### Security Policies & Configuration
-Complete security policy management:
-- `get_password_policy` / `update_password_policy` - Password policy configuration
-- `get_otp_policy` / `update_otp_policy` - OTP policy management
-- `get_webauthn_policy` / `update_webauthn_policy` - WebAuthn policy configuration
-- `get_browser_security_headers` / `update_browser_security_headers` - Browser security
-- `get_smtp_configuration` / `update_smtp_configuration` / `test_smtp_connection` - SMTP setup
-- `get_realm_security_settings` / `update_realm_security_settings` - Realm security
-- `get_realm_attributes` / `update_realm_attributes` - Custom attributes
-- `get_comprehensive_security_summary` - Complete security overview
-
-### Organization Management
-Multi-tenant organization lifecycle and domain management:
-- `create_organization` / `list_organizations` / `get_organization` - Organization CRUD operations
-- `update_organization` / `delete_organization` / `search_organizations` - Organization management
-- `list_organization_members` / `add_organization_member` / `remove_organization_member` - Member management
-- `get_organization_member` - Member details retrieval
-- `list_organization_domains` / `add_organization_domain` / `remove_organization_domain` - Domain management
-- `verify_organization_domain` - Domain verification for automatic user assignment
-- `list_organization_identity_providers` / `link_organization_identity_provider` - Identity provider linking
-- `unlink_organization_identity_provider` / `get_organization_identity_provider` - Provider management
-- `get_organization_summary` - Comprehensive organization analytics and overview
 
 ## Usage
 
@@ -553,6 +416,5 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 For issues, questions, or contributions, please visit the [GitHub repository](https://github.com/idoyudha/mcp-keycloak).
 
 ## Reference
-- [Keycloak Admin REST API Documentation](https://www.keycloak.org/docs-api/latest/rest-api/index.html)
-- [Keycloak Admin REST API OpenAPI Spec](https://www.keycloak.org/docs-api/latest/rest-api/openapi.yaml)
+- [Keycloak REST API Documentation](https://www.keycloak.org/docs-api/latest/rest-api/index.html)
 - [Keycloak Documentation](https://www.keycloak.org/documentation)

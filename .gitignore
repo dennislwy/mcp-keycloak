@@ -1,7 +1,6 @@
 .claude/
 nul
 CLAUDE.md
-docs/
 
 # Python-generated files
 __pycache__/
