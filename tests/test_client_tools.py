@@ -7,6 +7,7 @@ advanced search, client configuration, and OAuth2/OIDC settings.
 
 import pytest
 import uuid
+from src.tools.client_scope_tools import list_client_scopes
 from src.tools.client_tools import (
     list_clients,
     create_client,
@@ -20,6 +21,10 @@ from src.tools.client_tools import (
     delete_client_secret_rotated,
     get_client_management_permissions,
     update_client_management_permissions,
+    list_client_default_client_scopes,
+    list_optional_client_scopes,
+    add_optional_client_scope,
+    delete_optional_client_scope,
 )
 
 
@@ -765,6 +770,91 @@ class TestClientManagementPermissions:
                     )
                 else:
                     raise
+
+        finally:
+            if client_db_id:
+                await delete_client(client_db_id)
+
+
+@pytest.mark.integration
+class TestOptionalClientScopes:
+    """Test optional client scope operations."""
+
+    async def test_list_optional_client_scopes(self, unique_client_id):
+        """Test listing optional client scopes for a client."""
+        client_db_id = None
+
+        try:
+            await create_client(client_id=unique_client_id, name="Opt Scope Client", enabled=True)
+
+            clients = await list_clients(client_id=unique_client_id)
+            test_client = next(
+                (c for c in clients if c["clientId"] == unique_client_id), None
+            )
+            assert test_client is not None
+            client_db_id = test_client["id"]
+
+            optional_scopes = await list_optional_client_scopes(client_db_id)
+            assert isinstance(optional_scopes, list)
+            for scope in optional_scopes:
+                assert "id" in scope
+                assert "name" in scope
+
+        finally:
+            if client_db_id:
+                await delete_client(client_db_id)
+
+    async def test_add_and_remove_optional_client_scope(self, unique_client_id):
+        """Test adding and removing an optional client scope."""
+        client_db_id = None
+
+        try:
+            await create_client(client_id=unique_client_id, name="Opt Scope Client", enabled=True)
+
+            clients = await list_clients(client_id=unique_client_id)
+            test_client = next(
+                (c for c in clients if c["clientId"] == unique_client_id), None
+            )
+            assert test_client is not None
+            client_db_id = test_client["id"]
+
+            # Find a realm scope not already assigned as default or optional,
+            # matching the client's protocol (Keycloak silently ignores cross-protocol
+            # assignments and does not allow a scope to be both default and optional)
+            all_realm_scopes = await list_client_scopes()
+            current_optional = await list_optional_client_scopes(client_db_id)
+            current_default = await list_client_default_client_scopes(client_db_id)
+            assigned_ids = {s["id"] for s in current_optional} | {s["id"] for s in current_default}
+
+            available = [
+                s for s in all_realm_scopes
+                if s["id"] not in assigned_ids and s.get("protocol") == "openid-connect"
+            ]
+            if not available:
+                pytest.skip("No available openid-connect realm scopes to assign as optional")
+
+            scope_id = available[0]["id"]
+            initial_count = len(current_optional)
+
+            # Add as optional
+            result = await add_optional_client_scope(client_db_id, scope_id)
+            assert result["status"] == "updated"
+            assert scope_id in result["message"]
+
+            # Verify it was added
+            updated = await list_optional_client_scopes(client_db_id)
+            assert len(updated) == initial_count + 1
+            assert any(s["id"] == scope_id for s in updated)
+
+            # Remove it
+            delete_result = await delete_optional_client_scope(client_db_id, scope_id)
+            assert delete_result["status"] == "deleted"
+            assert scope_id in delete_result["message"]
+
+            # Verify it was removed
+            after_delete = await list_optional_client_scopes(client_db_id)
+            assert len(after_delete) == initial_count
+            assert not any(s["id"] == scope_id for s in after_delete)
 
         finally:
             if client_db_id:

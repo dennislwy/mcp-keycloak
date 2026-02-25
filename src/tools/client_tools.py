@@ -596,6 +596,78 @@ async def delete_client_default_client_scope(
 
 
 @mcp.tool()
+async def list_optional_client_scopes(
+    id: str, realm: Optional[str] = None
+) -> List[Dict[str, Any]]:
+    """
+    List optional client scopes for a client.
+
+    Args:
+        id: The client's database ID
+        realm: Target realm (uses default if not specified)
+
+    Returns:
+        List of optional client scope objects
+    """
+    return await client._make_request(
+        "GET", f"/clients/{id}/optional-client-scopes", realm=realm
+    )
+
+
+@mcp.tool()
+async def add_optional_client_scope(
+    id: str, client_scope_id: str, realm: Optional[str] = None
+) -> Dict[str, str]:
+    """
+    Add an optional client scope to a client.
+
+    Note: Using update_client or update_client_advanced with optionalClientScopes
+    does NOT persist optional scopes — this dedicated endpoint must be used.
+
+    Args:
+        id: The client's database ID
+        client_scope_id: The client scope ID to add as optional
+        realm: Target realm (uses default if not specified)
+
+    Returns:
+        Status message
+    """
+    await client._make_request(
+        "PUT", f"/clients/{id}/optional-client-scopes/{client_scope_id}", realm=realm
+    )
+    return {
+        "status": "updated",
+        "message": f"Client scope {client_scope_id} added as optional to client {id}",
+    }
+
+
+@mcp.tool()
+async def delete_optional_client_scope(
+    id: str, client_scope_id: str, realm: Optional[str] = None
+) -> Dict[str, str]:
+    """
+    Remove an optional client scope from a client.
+
+    Args:
+        id: The client's database ID
+        client_scope_id: The client scope ID to remove from optional scopes
+        realm: Target realm (uses default if not specified)
+
+    Returns:
+        Status message
+    """
+    await client._make_request(
+        "DELETE",
+        f"/clients/{id}/optional-client-scopes/{client_scope_id}",
+        realm=realm,
+    )
+    return {
+        "status": "deleted",
+        "message": f"Client scope {client_scope_id} removed from client {id} optional scopes",
+    }
+
+
+@mcp.tool()
 async def get_client_management_permissions(
     id: str, realm: Optional[str] = None
 ) -> Dict[str, Any]:

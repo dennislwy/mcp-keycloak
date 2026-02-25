@@ -78,9 +78,7 @@ async def request_token(
 
     elif grant_type == "authorization_code":
         if not code or not redirect_uri:
-            raise ValueError(
-                "Code and redirect_uri are required for authorization_code grant"
-            )
+            raise ValueError("Code and redirect_uri are required for authorization_code grant")
         form_data["code"] = code
         form_data["redirect_uri"] = redirect_uri
 
@@ -207,9 +205,7 @@ async def get_userinfo(
     url = f"{client.server_url}/realms/{target_realm}/protocol/openid-connect/userinfo"
 
     httpx_client = await client._ensure_client()
-    response = await httpx_client.get(
-        url, headers={"Authorization": f"Bearer {access_token}"}
-    )
+    response = await httpx_client.get(url, headers={"Authorization": f"Bearer {access_token}"})
     response.raise_for_status()
     return response.json()
 
@@ -311,6 +307,74 @@ async def logout(
         realm=realm,
         content_type="application/x-www-form-urlencoded",
         require_auth=False,  # Public endpoint, no authentication required
+    )
+
+
+@mcp.tool()
+async def exchange_token(
+    subject_token: str,
+    client_id: str,
+    client_secret: Optional[str] = None,
+    audience: Optional[str] = None,
+    subject_token_type: str = "urn:ietf:params:oauth:token-type:access_token",
+    requested_token_type: str = "urn:ietf:params:oauth:token-type:access_token",
+    scope: Optional[str] = None,
+    realm: Optional[str] = None,
+) -> Dict[str, Any]:
+    """
+    Exchange an OAuth2 token for another token using RFC 8693 Token Exchange.
+
+    Performs a Standard Token Exchange, allowing a client to exchange a token
+    issued for one audience/service for a token targeting a different audience.
+    Requires the exchanging client to have 'Standard Token Exchange' enabled and
+    the subject token must include the exchanging client in its audience.
+
+    Args:
+        subject_token: The token to exchange (typically an access token)
+        client_id: OAuth2 client ID performing the exchange (must have token exchange enabled)
+        client_secret: Client secret (required for confidential clients)
+        audience: Target client or resource for the new token (e.g., 'vds')
+        subject_token_type: Token type of subject_token (default: access_token URN)
+        requested_token_type: Desired token type for the result (default: access_token URN)
+        scope: Optional scope to request on the new token
+        realm: Target realm (uses default if not specified)
+
+    Returns:
+        Token response containing access_token, token_type, expires_in,
+        issued_token_type, and other token metadata
+
+    Example:
+        exchange_token(
+            subject_token="eyJhbGci...",
+            client_id="eca-central-service",
+            client_secret="secret",
+            audience="vds"
+        )
+    """
+    form_data = {
+        "grant_type": "urn:ietf:params:oauth:grant-type:token-exchange",
+        "client_id": client_id,
+        "subject_token": subject_token,
+        "subject_token_type": subject_token_type,
+        "requested_token_type": requested_token_type,
+    }
+
+    if client_secret:
+        form_data["client_secret"] = client_secret
+
+    if audience:
+        form_data["audience"] = audience
+
+    if scope:
+        form_data["scope"] = scope
+
+    return await client._make_request(
+        "POST",
+        "/protocol/openid-connect/token",
+        data=form_data,
+        realm=realm,
+        content_type="application/x-www-form-urlencoded",
+        require_auth=False,
     )
 
 

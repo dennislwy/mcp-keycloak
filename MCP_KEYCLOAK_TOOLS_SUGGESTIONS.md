@@ -2,16 +2,17 @@
 
 ## Implementation Status
 
-**Total Tools:** 47
-- ✅ **Implemented:** 47 (100%)
-- ✅ **Tested:** 47 (100%)
+**Total Tools:** 51
+- ✅ **Implemented:** 51 (100%)
+- ⚠️ **Tested:** 50 (98%) — `exchange_token` pending tests
 - 🔧 **Enhanced:** User and Group tools with advanced parameters
 
-**Test Coverage:** 111 integration tests across 12 test files (all passing)
+**Test Coverage:** 113 integration tests across 12 test files (all passing)
 
 **Implementation Date:** 2025-02-14
-**Last Updated:** 2026-02-24
+**Last Updated:** 2026-02-25
 - Added OIDC Protocol tools (5 new tools: userinfo, revoke, logout, certs, discovery)
+- Documented exchange_token (RFC 8693 Token Exchange, already implemented)
 - Added Client Secret Rotation tools (2 tools)
 - Added Attack Detection tools (3 tools)
 - Added Client Management Permissions tools (2 tools)
@@ -24,17 +25,20 @@
 **Tool File:** `client_tools.py`
 **Base URL Path:** `/admin/realms/{realm}/clients/{client-uuid}`
 
-| Tool Name                            | Method | Endpoint                                 | Purpose                                                          | Implemented | Tested |
-| ------------------------------------ | ------ | ---------------------------------------- | ---------------------------------------------------------------- | ----------- | ------ |
-| `get_client_secret`                  | GET    | `/client-secret`                         | Get the current client secret                                    | ✅           | ✅      |
-| `regenerate_client_secret`           | POST   | `/client-secret`                         | Generate new secret (rotates old secret if policies configured)  | ✅           | ✅      |
-| `get_client_secret_rotated`          | GET    | `/client-secret/rotated`                 | Get the rotated (previous) client secret                         | ✅           | ✅      |
-| `delete_client_secret_rotated`       | DELETE | `/client-secret/rotated`                 | Invalidate the rotated client secret                             | ✅           | ✅      |
-| `list_client_default_client_scopes`  | GET    | `/default-client-scopes`                 | List default client scopes for a client                          | ✅           | ✅      |
-| `update_client_default_client_scope` | PUT    | `/default-client-scopes/{clientScopeId}` | Add default client scope to a client                             | ✅           | ✅      |
-| `delete_client_default_client_scope` | DELETE | `/default-client-scopes/{clientScopeId}` | Remove default client scope from a client                        | ✅           | ✅      |
-| `get_client_management_permissions`  | GET    | `/management/permissions`                | Get management permissions status for a client                   | ✅           | ✅      |
-| `update_client_management_permissions`| PUT   | `/management/permissions`                | Enable/disable fine-grained management permissions               | ✅           | ✅      |
+| Tool Name                              | Method | Endpoint                                        | Purpose                                                                                                                                                          | Implemented | Tested |
+| -------------------------------------- | ------ | ----------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- | ------ |
+| `get_client_secret`                    | GET    | `/client-secret`                                | Get the current client secret                                                                                                                                    | ✅           | ✅      |
+| `regenerate_client_secret`             | POST   | `/client-secret`                                | Generate new secret (rotates old secret if policies configured)                                                                                                  | ✅           | ✅      |
+| `get_client_secret_rotated`            | GET    | `/client-secret/rotated`                        | Get the rotated (previous) client secret                                                                                                                         | ✅           | ✅      |
+| `delete_client_secret_rotated`         | DELETE | `/client-secret/rotated`                        | Invalidate the rotated client secret                                                                                                                             | ✅           | ✅      |
+| `list_client_default_client_scopes`    | GET    | `/default-client-scopes`                        | List default client scopes for a client                                                                                                                          | ✅           | ✅      |
+| `update_client_default_client_scope`   | PUT    | `/default-client-scopes/{clientScopeId}`        | Add default client scope to a client                                                                                                                             | ✅           | ✅      |
+| `delete_client_default_client_scope`   | DELETE | `/default-client-scopes/{clientScopeId}`        | Remove default client scope from a client                                                                                                                        | ✅           | ✅      |
+| `get_client_management_permissions`    | GET    | `/management/permissions`                       | Get management permissions status for a client                                                                                                                   | ✅           | ✅      |
+| `update_client_management_permissions` | PUT    | `/management/permissions`                       | Enable/disable fine-grained management permissions                                                                                                               | ✅           | ✅      |
+| `add_optional_client_scope`            | PUT    | `/{client-id}/optional-client-scopes/{scopeId}` | Add a client scope to a client's optional scopes. Note: `update_client_advanced` does NOT persist `optionalClientScopes` — this dedicated endpoint must be used. | ✅           | ✅      |
+| `delete_optional_client_scope`         | DELETE | `/{client-id}/optional-client-scopes/{scopeId}` | Remove a client scope from a client's optional scopes.                                                                                                           | ✅           | ✅      |
+| `list_optional_client_scopes`          | GET    | `/{client-id}/optional-client-scopes`           | List all optional client scopes assigned to a client.                                                                                                            | ✅           | ✅      |
 
 **Notes:**
 - **Client secret rotation** preserves the old secret as a "rotated secret" when rotation policies are configured at the realm level. This enables zero-downtime secret rotation by allowing both secrets to work during a transition period.
@@ -109,22 +113,23 @@
 **Tool File:** `oidc_protocol_tools.py`
 **Base URL Path:** `/realms/{realm}/protocol/openid-connect`
 
-| Tool Name                    | Method | Endpoint                      | Purpose                                                                                                                                                                                                | Implemented | Tested |
-| ---------------------------- | ------ | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------- | ------ |
-| `request_token`              | POST   | `/token`                      | Request access tokens using various OAuth2 grant types (password, authorization_code, refresh_token, client_credentials)                                                                               | ✅           | ✅      |
-| `introspect_token`           | POST   | `/token/introspect`           | Introspect OAuth2 tokens to validate their active state and retrieve associated metadata (exp, iat, scope, username, client_id, permissions). Compliant with RFC 7662. Requires client authentication. | ✅           | ✅      |
-| `get_userinfo`               | GET    | `/userinfo`                   | Get user information from UserInfo endpoint using Bearer token authentication. Returns OIDC standard claims (sub, name, email, etc.)                                                                   | ✅           | ✅      |
-| `revoke_token`               | POST   | `/revoke`                     | Revoke OAuth2 tokens (access or refresh tokens) to prevent further use. RFC 7009 compliant. Requires client authentication.                                                                            | ✅           | ✅      |
-| `logout`                     | POST   | `/logout`                     | Logout and invalidate user session by revoking refresh token. OIDC logout endpoint.                                                                                                                    | ✅           | ✅      |
-| `get_certs`                  | GET    | `/certs`                      | Get JSON Web Key Set (JWKS) for token signature verification. Returns public keys used to sign JWTs.                                                                                                   | ✅           | ✅      |
-| `get_openid_configuration`   | GET    | `/.well-known/openid-configuration` | Get OpenID Connect Discovery document with all OIDC endpoints, supported features, and capabilities. Returns issuer, endpoints, grant types, scopes, and algorithms.                                   | ✅           | ✅      |
+| Tool Name                  | Method | Endpoint                            | Purpose                                                                                                                                                                                                | Implemented | Tested |
+| -------------------------- | ------ | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------- | ------ |
+| `request_token`            | POST   | `/token`                            | Request access tokens using various OAuth2 grant types (password, authorization_code, refresh_token, client_credentials)                                                                               | ✅           | ✅      |
+| `introspect_token`         | POST   | `/token/introspect`                 | Introspect OAuth2 tokens to validate their active state and retrieve associated metadata (exp, iat, scope, username, client_id, permissions). Compliant with RFC 7662. Requires client authentication. | ✅           | ✅      |
+| `get_userinfo`             | GET    | `/userinfo`                         | Get user information from UserInfo endpoint using Bearer token authentication. Returns OIDC standard claims (sub, name, email, etc.)                                                                   | ✅           | ✅      |
+| `revoke_token`             | POST   | `/revoke`                           | Revoke OAuth2 tokens (access or refresh tokens) to prevent further use. RFC 7009 compliant. Requires client authentication.                                                                            | ✅           | ✅      |
+| `logout`                   | POST   | `/logout`                           | Logout and invalidate user session by revoking refresh token. OIDC logout endpoint.                                                                                                                    | ✅           | ✅      |
+| `exchange_token`           | POST   | `/token`                            | Exchange an OAuth2 token for another token targeting a different audience/service. RFC 8693 Token Exchange (`grant_type=urn:ietf:params:oauth:grant-type:token-exchange`). Requires the client to have Standard Token Exchange enabled and the subject token to include the client in its audience. | ✅           | ❌      |
+| `get_certs`                | GET    | `/certs`                            | Get JSON Web Key Set (JWKS) for token signature verification. Returns public keys used to sign JWTs.                                                                                                   | ✅           | ✅      |
+| `get_openid_configuration` | GET    | `/.well-known/openid-configuration` | Get OpenID Connect Discovery document with all OIDC endpoints, supported features, and capabilities. Returns issuer, endpoints, grant types, scopes, and algorithms.                                   | ✅           | ✅      |
 
 ## General Server Operations
 **Tool File:** `general_tools.py`
 **Base URL Path:** `/admin/serverinfo`
 
-| Tool Name         | Method | Endpoint | Purpose                                                                                                                                                                                                | Implemented | Tested |
-| ----------------- | ------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------- | ------ |
+| Tool Name         | Method | Endpoint | Purpose                                                                                                                                                                                              | Implemented | Tested |
+| ----------------- | ------ | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- | ------ |
 | `get_server_info` | GET    |          | Get comprehensive Keycloak server information including system info, memory info, profile info, features, themes, providers, protocols, and other server metadata. Server-level endpoint (no realm). | ✅           | ✅      |
 
 ## Attack Detection
