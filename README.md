@@ -155,9 +155,14 @@ System-wide configuration:
 - `add_realm_default_group` / `remove_realm_default_group` - Default settings
 
 ### OIDC Protocol
-OAuth2/OpenID Connect token operations:
+Complete OAuth2/OpenID Connect protocol operations:
 - `request_token` - Request access tokens using various OAuth2 grant types (password, client_credentials, authorization_code, refresh_token)
 - `introspect_token` - Introspect tokens to validate state and retrieve metadata (RFC 7662 compliant)
+- `get_userinfo` - Retrieve user claims using Bearer token authentication
+- `revoke_token` - Revoke access or refresh tokens (RFC 7009 compliant)
+- `logout` - End user sessions and invalidate refresh tokens
+- `get_certs` - Get JWKS for JWT signature verification
+- `get_openid_configuration` - Get OpenID Connect Discovery document with all endpoints and capabilities
 
 ### Authentication Management
 Complete authentication flow control:
@@ -357,7 +362,7 @@ Integrate Keycloak management into your CI/CD pipelines, allowing automated conf
 
 ## Testing
 
-The project includes a comprehensive test suite with 93 integration tests covering all tool categories including client secret rotation, default scope management, and fine-grained permissions. For detailed information, see [tests/README.md](tests/README.md).
+The project includes a comprehensive test suite with 104 integration tests covering all tool categories including OIDC protocol operations, client secret rotation, default scope management, and fine-grained permissions. For detailed information, see [tests/README.md](tests/README.md).
 
 ### Running Tests
 

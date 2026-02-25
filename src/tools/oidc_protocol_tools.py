@@ -170,3 +170,222 @@ async def introspect_token(
         content_type="application/x-www-form-urlencoded",
         require_auth=False,  # Public endpoint, no authentication required
     )
+
+
+@mcp.tool()
+async def get_userinfo(
+    access_token: str,
+    realm: Optional[str] = None,
+) -> Dict[str, Any]:
+    """
+    Get user information from the UserInfo endpoint.
+
+    Returns user claims as described in the OpenID Connect specification.
+    Requires a valid access token obtained through the authorization flow.
+
+    Args:
+        access_token: Valid OAuth2 access token
+        realm: Target realm (uses default if not specified)
+
+    Returns:
+        User information containing claims such as:
+        - sub: Subject identifier
+        - name: Full name
+        - given_name: Given name
+        - family_name: Family name
+        - preferred_username: Preferred username
+        - email: Email address
+        - email_verified: Email verification status
+        - Additional custom claims based on token scopes
+
+    Example:
+        get_userinfo(access_token="eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...")
+    """
+    # UserInfo endpoint requires Bearer token authentication
+    # We need to make the request directly with the access token
+    target_realm = realm if realm is not None else client.realm_name
+    url = f"{client.server_url}/realms/{target_realm}/protocol/openid-connect/userinfo"
+
+    httpx_client = await client._ensure_client()
+    response = await httpx_client.get(
+        url, headers={"Authorization": f"Bearer {access_token}"}
+    )
+    response.raise_for_status()
+    return response.json()
+
+
+@mcp.tool()
+async def revoke_token(
+    token: str,
+    client_id: str,
+    client_secret: Optional[str] = None,
+    token_type_hint: Optional[str] = None,
+    realm: Optional[str] = None,
+) -> Dict[str, Any]:
+    """
+    Revoke an OAuth2 token (access token or refresh token).
+
+    Invalidates tokens to prevent further use. Compliant with RFC 7009.
+    Requires client authentication.
+
+    Args:
+        token: The token to revoke (access_token or refresh_token)
+        client_id: OAuth2 client ID performing the revocation
+        client_secret: Client secret (required for confidential clients)
+        token_type_hint: Hint about token type ('access_token' or 'refresh_token')
+        realm: Target realm (uses default if not specified)
+
+    Returns:
+        Empty dict on success (endpoint returns 200 with no content)
+
+    Example:
+        revoke_token(token="refresh_token_value", client_id="my-client",
+                    client_secret="secret", token_type_hint="refresh_token")
+    """
+    # Build form data
+    form_data = {
+        "token": token,
+        "client_id": client_id,
+    }
+
+    # Add client secret if provided
+    if client_secret:
+        form_data["client_secret"] = client_secret
+
+    # Add token type hint if provided
+    if token_type_hint:
+        form_data["token_type_hint"] = token_type_hint
+
+    # Make request to the revocation endpoint
+    return await client._make_request(
+        "POST",
+        "/protocol/openid-connect/revoke",
+        data=form_data,
+        realm=realm,
+        content_type="application/x-www-form-urlencoded",
+        require_auth=False,  # Public endpoint, no authentication required
+    )
+
+
+@mcp.tool()
+async def logout(
+    refresh_token: str,
+    client_id: str,
+    client_secret: Optional[str] = None,
+    realm: Optional[str] = None,
+) -> Dict[str, Any]:
+    """
+    Logout and invalidate the user session.
+
+    Performs logout by invalidating the refresh token and ending the user's session.
+    This is the OIDC logout endpoint that requires a refresh token.
+
+    Args:
+        refresh_token: The refresh token to invalidate
+        client_id: OAuth2 client ID
+        client_secret: Client secret (required for confidential clients)
+        realm: Target realm (uses default if not specified)
+
+    Returns:
+        Empty dict on success (endpoint returns 204 or 200 with no content)
+
+    Example:
+        logout(refresh_token="refresh_token_value", client_id="my-client",
+              client_secret="secret")
+    """
+    # Build form data
+    form_data = {
+        "client_id": client_id,
+        "refresh_token": refresh_token,
+    }
+
+    # Add client secret if provided
+    if client_secret:
+        form_data["client_secret"] = client_secret
+
+    # Make request to the logout endpoint
+    return await client._make_request(
+        "POST",
+        "/protocol/openid-connect/logout",
+        data=form_data,
+        realm=realm,
+        content_type="application/x-www-form-urlencoded",
+        require_auth=False,  # Public endpoint, no authentication required
+    )
+
+
+@mcp.tool()
+async def get_certs(realm: Optional[str] = None) -> Dict[str, Any]:
+    """
+    Get the JSON Web Key Set (JWKS) for the realm.
+
+    Returns the public keys used by the realm to sign tokens, encoded as
+    JSON Web Keys (JWK). Clients use these keys to verify JWT signatures.
+
+    Args:
+        realm: Target realm (uses default if not specified)
+
+    Returns:
+        JWKS object containing:
+        - keys: Array of JWK objects with public key information
+          - kid: Key ID
+          - kty: Key type (RSA, EC, etc.)
+          - alg: Algorithm
+          - use: Key usage (sig for signature)
+          - n: RSA public key modulus (for RSA keys)
+          - e: RSA public key exponent (for RSA keys)
+          - Additional key-specific parameters
+
+    Example:
+        get_certs()  # Returns all public keys for signature verification
+    """
+    return await client._make_request(
+        "GET",
+        "/protocol/openid-connect/certs",
+        realm=realm,
+        require_auth=False,  # Public endpoint
+    )
+
+
+@mcp.tool()
+async def get_openid_configuration(realm: Optional[str] = None) -> Dict[str, Any]:
+    """
+    Get the OpenID Connect discovery document (well-known configuration).
+
+    Returns the OIDC provider metadata as specified in OpenID Connect Discovery.
+    This document describes the realm's OpenID Connect configuration including
+    all available endpoints, supported features, and capabilities.
+
+    Args:
+        realm: Target realm (uses default if not specified)
+
+    Returns:
+        OpenID Connect configuration containing:
+        - issuer: The issuer identifier
+        - authorization_endpoint: OAuth2 authorization endpoint
+        - token_endpoint: Token endpoint
+        - token_introspection_endpoint: Token introspection endpoint
+        - userinfo_endpoint: UserInfo endpoint
+        - end_session_endpoint: Logout endpoint
+        - jwks_uri: JSON Web Key Set endpoint
+        - check_session_iframe: Session check endpoint
+        - grant_types_supported: Supported OAuth2 grant types
+        - response_types_supported: Supported response types
+        - subject_types_supported: Subject identifier types
+        - id_token_signing_alg_values_supported: Signing algorithms
+        - scopes_supported: Available scopes
+        - claims_supported: Available claims
+        - Additional metadata about realm capabilities
+
+    Example:
+        get_openid_configuration()  # Get full OIDC discovery document
+    """
+    # Discovery endpoint is at /realms/{realm}/.well-known/openid-configuration
+    # It's a public endpoint, not under /admin/
+    target_realm = realm if realm is not None else client.realm_name
+    url = f"{client.server_url}/realms/{target_realm}/.well-known/openid-configuration"
+
+    httpx_client = await client._ensure_client()
+    response = await httpx_client.get(url)
+    response.raise_for_status()
+    return response.json()

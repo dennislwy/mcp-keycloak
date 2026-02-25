@@ -363,3 +363,284 @@ class TestOIDCTokenLifecycle:
 
         # 5. Verify tokens are different
         assert initial_tokens["access_token"] != refreshed_tokens["access_token"]
+
+
+@pytest.mark.integration
+class TestOIDCUserInfo:
+    """Test OIDC UserInfo endpoint operations."""
+
+    async def test_get_userinfo(self, test_client, test_user):
+        """Test getting user information with access token."""
+        # First, get a token with required scopes
+        token_response = await oidc_protocol_tools.request_token(
+            grant_type="password",
+            client_id=test_client["clientId"],
+            client_secret=test_client["secret"],
+            username=test_user["username"],
+            password=test_user["password"],
+            scope="openid profile email",
+        )
+
+        access_token = token_response["access_token"]
+
+        # Get user info
+        userinfo = await oidc_protocol_tools.get_userinfo(access_token=access_token)
+
+        # Verify user info structure
+        assert "sub" in userinfo  # Subject identifier
+        assert "preferred_username" in userinfo
+        assert userinfo["preferred_username"] == test_user["username"]
+
+        # Verify profile claims (if scope included)
+        if "profile" in token_response.get("scope", ""):
+            assert "name" in userinfo or "given_name" in userinfo
+
+        # Verify email claims (if scope included)
+        if "email" in token_response.get("scope", ""):
+            assert "email" in userinfo
+            assert "email_verified" in userinfo
+
+    async def test_get_userinfo_invalid_token(self):
+        """Test getting user info with invalid token."""
+        try:
+            await oidc_protocol_tools.get_userinfo(access_token="invalid.token.value")
+            assert False, "Expected exception for invalid token"
+        except Exception as e:
+            error_msg = str(e).lower()
+            assert "401" in error_msg or "unauthorized" in error_msg
+
+
+@pytest.mark.integration
+class TestOIDCTokenRevocation:
+    """Test OIDC token revocation operations."""
+
+    async def test_revoke_refresh_token(self, test_client, test_user):
+        """Test revoking a refresh token."""
+        # Get tokens
+        token_response = await oidc_protocol_tools.request_token(
+            grant_type="password",
+            client_id=test_client["clientId"],
+            client_secret=test_client["secret"],
+            username=test_user["username"],
+            password=test_user["password"],
+        )
+
+        refresh_token = token_response["refresh_token"]
+
+        # Revoke the refresh token
+        revoke_response = await oidc_protocol_tools.revoke_token(
+            token=refresh_token,
+            client_id=test_client["clientId"],
+            client_secret=test_client["secret"],
+            token_type_hint="refresh_token",
+        )
+
+        # Revocation endpoint returns empty response on success
+        assert revoke_response == {} or revoke_response is None
+
+        # Try to use the revoked refresh token (should fail)
+        try:
+            await oidc_protocol_tools.request_token(
+                grant_type="refresh_token",
+                client_id=test_client["clientId"],
+                client_secret=test_client["secret"],
+                refresh_token=refresh_token,
+            )
+            assert False, "Expected exception when using revoked refresh token"
+        except Exception as e:
+            error_msg = str(e).lower()
+            assert (
+                "400" in error_msg or "invalid" in error_msg or "revoked" in error_msg
+            )
+
+    async def test_revoke_access_token(self, test_client, test_user):
+        """Test revoking an access token."""
+        # Get tokens
+        token_response = await oidc_protocol_tools.request_token(
+            grant_type="password",
+            client_id=test_client["clientId"],
+            client_secret=test_client["secret"],
+            username=test_user["username"],
+            password=test_user["password"],
+        )
+
+        access_token = token_response["access_token"]
+
+        # Revoke the access token
+        revoke_response = await oidc_protocol_tools.revoke_token(
+            token=access_token,
+            client_id=test_client["clientId"],
+            client_secret=test_client["secret"],
+            token_type_hint="access_token",
+        )
+
+        # Revocation endpoint returns empty response on success
+        assert revoke_response == {} or revoke_response is None
+
+    async def test_revoke_token_without_hint(self, test_client, test_user):
+        """Test revoking a token without type hint."""
+        # Get tokens
+        token_response = await oidc_protocol_tools.request_token(
+            grant_type="password",
+            client_id=test_client["clientId"],
+            client_secret=test_client["secret"],
+            username=test_user["username"],
+            password=test_user["password"],
+        )
+
+        # Revoke without hint (should still work)
+        revoke_response = await oidc_protocol_tools.revoke_token(
+            token=token_response["refresh_token"],
+            client_id=test_client["clientId"],
+            client_secret=test_client["secret"],
+        )
+
+        assert revoke_response == {} or revoke_response is None
+
+
+@pytest.mark.integration
+class TestOIDCLogout:
+    """Test OIDC logout operations."""
+
+    async def test_logout(self, test_client, test_user):
+        """Test logout with refresh token."""
+        # Get tokens
+        token_response = await oidc_protocol_tools.request_token(
+            grant_type="password",
+            client_id=test_client["clientId"],
+            client_secret=test_client["secret"],
+            username=test_user["username"],
+            password=test_user["password"],
+        )
+
+        refresh_token = token_response["refresh_token"]
+
+        # Logout (invalidate session)
+        logout_response = await oidc_protocol_tools.logout(
+            refresh_token=refresh_token,
+            client_id=test_client["clientId"],
+            client_secret=test_client["secret"],
+        )
+
+        # Logout endpoint returns empty response on success
+        assert logout_response == {} or logout_response is None
+
+        # Try to use the refresh token after logout (should fail)
+        try:
+            await oidc_protocol_tools.request_token(
+                grant_type="refresh_token",
+                client_id=test_client["clientId"],
+                client_secret=test_client["secret"],
+                refresh_token=refresh_token,
+            )
+            assert False, "Expected exception when using refresh token after logout"
+        except Exception as e:
+            error_msg = str(e).lower()
+            assert "400" in error_msg or "invalid" in error_msg
+
+    async def test_logout_without_secret(self, test_client, test_user):
+        """Test logout without client secret (should fail for confidential clients)."""
+        # Get tokens
+        token_response = await oidc_protocol_tools.request_token(
+            grant_type="password",
+            client_id=test_client["clientId"],
+            client_secret=test_client["secret"],
+            username=test_user["username"],
+            password=test_user["password"],
+        )
+
+        # Logout without secret should fail for confidential clients
+        try:
+            await oidc_protocol_tools.logout(
+                refresh_token=token_response["refresh_token"],
+                client_id=test_client["clientId"],
+            )
+            assert False, "Expected exception when logging out without client secret"
+        except Exception as e:
+            error_msg = str(e).lower()
+            assert "401" in error_msg or "unauthorized" in error_msg
+
+
+@pytest.mark.integration
+class TestOIDCCerts:
+    """Test OIDC JWKS endpoint operations."""
+
+    async def test_get_certs(self):
+        """Test getting JWKS for token signature verification."""
+        # Get JWKS
+        jwks = await oidc_protocol_tools.get_certs()
+
+        # Verify JWKS structure
+        assert "keys" in jwks
+        assert isinstance(jwks["keys"], list)
+        assert len(jwks["keys"]) > 0
+
+        # Verify at least one key has required JWK fields
+        key = jwks["keys"][0]
+        assert "kid" in key  # Key ID
+        assert "kty" in key  # Key type
+        assert "alg" in key  # Algorithm
+        assert "use" in key  # Key usage (should be "sig" for signature)
+        assert key["use"] == "sig"
+
+        # For RSA keys, verify RSA-specific fields
+        if key["kty"] == "RSA":
+            assert "n" in key  # RSA modulus
+            assert "e" in key  # RSA exponent
+
+    async def test_get_certs_different_realm(self):
+        """Test getting JWKS for a different realm."""
+        # Get JWKS for master realm explicitly
+        jwks = await oidc_protocol_tools.get_certs(realm="master")
+
+        assert "keys" in jwks
+        assert isinstance(jwks["keys"], list)
+
+
+@pytest.mark.integration
+class TestOIDCDiscovery:
+    """Test OIDC discovery document operations."""
+
+    async def test_get_openid_configuration(self):
+        """Test getting OpenID Connect discovery document."""
+        # Get OIDC configuration
+        config = await oidc_protocol_tools.get_openid_configuration()
+
+        # Verify required OpenID Connect Discovery fields
+        assert "issuer" in config
+        assert "authorization_endpoint" in config
+        assert "token_endpoint" in config
+        assert "userinfo_endpoint" in config
+        assert "jwks_uri" in config
+        assert "end_session_endpoint" in config
+
+        # Verify optional but common fields
+        assert "introspection_endpoint" in config  # Keycloak uses this name
+        assert "revocation_endpoint" in config
+
+        # Verify supported features
+        assert "grant_types_supported" in config
+        assert isinstance(config["grant_types_supported"], list)
+        assert "authorization_code" in config["grant_types_supported"]
+        assert "refresh_token" in config["grant_types_supported"]
+
+        assert "response_types_supported" in config
+        assert isinstance(config["response_types_supported"], list)
+
+        assert "subject_types_supported" in config
+        assert "id_token_signing_alg_values_supported" in config
+
+        # Verify scopes and claims
+        assert "scopes_supported" in config
+        assert "openid" in config["scopes_supported"]
+
+        assert "claims_supported" in config
+        assert "sub" in config["claims_supported"]
+
+    async def test_get_openid_configuration_different_realm(self):
+        """Test getting discovery document for a different realm."""
+        # Get configuration for master realm explicitly
+        config = await oidc_protocol_tools.get_openid_configuration(realm="master")
+
+        assert "issuer" in config
+        assert "master" in config["issuer"]  # Should reference master realm

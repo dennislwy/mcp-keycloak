@@ -2,17 +2,19 @@
 
 ## Implementation Status
 
-**Total Tools:** 41
-- ✅ **Implemented:** 41 (100%)
-- ✅ **Tested:** 41 (100%)
+**Total Tools:** 46
+- ✅ **Implemented:** 46 (100%)
+- ✅ **Tested:** 46 (100%)
 - 🔧 **Enhanced:** User and Group tools with advanced parameters
 
-**Test Coverage:** 93 integration tests across 11 test files (all passing)
+**Test Coverage:** 104 integration tests across 11 test files (all passing)
 
 **Implementation Date:** 2025-02-14
 **Last Updated:** 2026-02-24
-- Added Client Secret Rotation tools (2 new tools)
-- Added Attack Detection tools (3 new tools)
+- Added OIDC Protocol tools (5 new tools: userinfo, revoke, logout, certs, discovery)
+- Added Client Secret Rotation tools (2 tools)
+- Added Attack Detection tools (3 tools)
+- Added Client Management Permissions tools (2 tools)
 - Enhanced User tools with 9 new parameters
 - Enhanced Group tools with 4 new parameters + 2 new hierarchy operations
 
@@ -104,13 +106,18 @@
 | `get_role_composites_clients` | GET    | `/{role-name}/composites/clients/{client-uuid}` | Get client-level roles for the client that are in the role's composite | ✅           | ✅      |
 
 ## OIDC Protocol Endpoints
-**Tool File:** `oidc_protocol_tools.py`  
+**Tool File:** `oidc_protocol_tools.py`
 **Base URL Path:** `/realms/{realm}/protocol/openid-connect`
 
-| Tool Name          | Method | Endpoint            | Purpose                                                                                                                                                                                                | Implemented | Tested |
-| ------------------ | ------ | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------- | ------ |
-| `request_token`    | POST   | `/token`            | Request access tokens using various OAuth2 grant types (password, authorization_code, refresh_token, client_credentials)                                                                               | ✅           | ✅      |
-| `introspect_token` | POST   | `/token/introspect` | Introspect OAuth2 tokens to validate their active state and retrieve associated metadata (exp, iat, scope, username, client_id, permissions). Compliant with RFC 7662. Requires client authentication. | ✅           | ✅      |
+| Tool Name                    | Method | Endpoint                      | Purpose                                                                                                                                                                                                | Implemented | Tested |
+| ---------------------------- | ------ | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------- | ------ |
+| `request_token`              | POST   | `/token`                      | Request access tokens using various OAuth2 grant types (password, authorization_code, refresh_token, client_credentials)                                                                               | ✅           | ✅      |
+| `introspect_token`           | POST   | `/token/introspect`           | Introspect OAuth2 tokens to validate their active state and retrieve associated metadata (exp, iat, scope, username, client_id, permissions). Compliant with RFC 7662. Requires client authentication. | ✅           | ✅      |
+| `get_userinfo`               | GET    | `/userinfo`                   | Get user information from UserInfo endpoint using Bearer token authentication. Returns OIDC standard claims (sub, name, email, etc.)                                                                   | ✅           | ✅      |
+| `revoke_token`               | POST   | `/revoke`                     | Revoke OAuth2 tokens (access or refresh tokens) to prevent further use. RFC 7009 compliant. Requires client authentication.                                                                            | ✅           | ✅      |
+| `logout`                     | POST   | `/logout`                     | Logout and invalidate user session by revoking refresh token. OIDC logout endpoint.                                                                                                                    | ✅           | ✅      |
+| `get_certs`                  | GET    | `/certs`                      | Get JSON Web Key Set (JWKS) for token signature verification. Returns public keys used to sign JWTs.                                                                                                   | ✅           | ✅      |
+| `get_openid_configuration`   | GET    | `/.well-known/openid-configuration` | Get OpenID Connect Discovery document with all OIDC endpoints, supported features, and capabilities. Returns issuer, endpoints, grant types, scopes, and algorithms.                                   | ✅           | ✅      |
 
 ## Attack Detection
 **Tool File:** `attack_detection_tools.py`  
