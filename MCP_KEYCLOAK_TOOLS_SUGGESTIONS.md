@@ -2,15 +2,16 @@
 
 ## Implementation Status
 
-**Total Tools:** 51
-- ✅ **Implemented:** 51 (100%)
-- ⚠️ **Tested:** 50 (98%) — `exchange_token` pending tests
+**Total Tools:** 59
+- ✅ **Implemented:** 59 (100%)
+- ⚠️ **Tested:** 58 (98%) — `exchange_token` pending tests
 - 🔧 **Enhanced:** User and Group tools with advanced parameters
 
-**Test Coverage:** 113 integration tests across 12 test files (all passing)
+**Test Coverage:** 130 integration tests across 13 test files (all passing)
 
 **Implementation Date:** 2025-02-14
-**Last Updated:** 2026-02-25
+**Last Updated:** 2026-03-02
+- Added 8 missing Authentication Management tools (required action CRUD, required action config, form providers, per-client config)
 - Added OIDC Protocol tools (5 new tools: userinfo, revoke, logout, certs, discovery)
 - Documented exchange_token (RFC 8693 Token Exchange, already implemented)
 - Added Client Secret Rotation tools (2 tools)
@@ -182,6 +183,88 @@
 | ----------------- | ------ | -------------------------------------------------- | ----------- | ------ |
 | `list_subgroups`  | GET    | Get paginated list of subgroups for a parent group | ✅           | ✅      |
 | `create_subgroup` | POST   | Create a subgroup under a parent group             | ✅           | ✅      |
+
+## Authentication Management
+**Tool File:** `authentication_management_tools.py`
+**Base URL Path:** `/admin/realms/{realm}/authentication`
+
+### Authentication Flows
+
+| Tool Name | Method | Endpoint | Purpose | Implemented | Tested |
+| --- | --- | --- | --- | --- | --- |
+| `list_authentication_flows` | GET | `/flows` | List all authentication flows in the realm | ✅ | ✅ |
+| `get_authentication_flow` | GET | `/flows/{id}` | Get a specific flow by ID | ✅ | ✅ |
+| `create_authentication_flow` | POST | `/flows` | Create a new authentication flow | ✅ | ✅ |
+| `update_authentication_flow` | PUT | `/flows/{id}` | Update an existing flow | ✅ | ✅ |
+| `delete_authentication_flow` | DELETE | `/flows/{id}` | Delete a flow | ✅ | ✅ |
+| `copy_authentication_flow` | POST | `/flows/{flowAlias}/copy` | Duplicate a flow under a new name | ✅ | ✅ |
+
+### Flow Executions
+
+| Tool Name | Method | Endpoint | Purpose | Implemented | Tested |
+| --- | --- | --- | --- | --- | --- |
+| `get_flow_executions` | GET | `/flows/{flowAlias}/executions` | Get executions for a flow | ✅ | ✅ |
+| `update_flow_executions` | PUT | `/flows/{flowAlias}/executions` | Update execution ordering/requirements | ✅ | ✅ |
+| `add_execution_to_flow` | POST | `/flows/{flowAlias}/executions/execution` | Add an authenticator execution to a flow | ✅ | ✅ |
+| `add_subflow_to_flow` | POST | `/flows/{flowAlias}/executions/flow` | Add a nested sub-flow to a flow | ✅ | ✅ |
+| `create_execution` | POST | `/executions` | Create a standalone execution | ✅ | ✅ |
+| `get_execution` | GET | `/executions/{executionId}` | Get a single execution | ✅ | ✅ |
+| `delete_execution` | DELETE | `/executions/{executionId}` | Delete an execution | ✅ | ✅ |
+| `raise_execution_priority` | POST | `/executions/{executionId}/raise-priority` | Increase execution priority | ✅ | ✅ |
+| `lower_execution_priority` | POST | `/executions/{executionId}/lower-priority` | Decrease execution priority | ✅ | ✅ |
+| `get_execution_config` | GET | `/executions/{executionId}/config/{id}` | Get execution configuration | ✅ | ✅ |
+| `update_execution_config` | POST | `/executions/{executionId}/config` | Update execution configuration | ✅ | ✅ |
+
+### Authenticator Configuration
+
+| Tool Name | Method | Endpoint | Purpose | Implemented | Tested |
+| --- | --- | --- | --- | --- | --- |
+| `get_authenticator_config` | GET | `/config/{id}` | Get authenticator configuration by ID | ✅ | ✅ |
+| `create_authenticator_config` | POST | `/config` | Create new authenticator configuration | ✅ | ✅ |
+| `update_authenticator_config` | PUT | `/config/{id}` | Update authenticator configuration | ✅ | ✅ |
+| `delete_authenticator_config` | DELETE | `/config/{id}` | Delete authenticator configuration | ✅ | ✅ |
+
+### Authenticator Providers
+
+| Tool Name | Method | Endpoint | Purpose | Implemented | Tested |
+| --- | --- | --- | --- | --- | --- |
+| `get_authenticator_providers` | GET | `/authenticator-providers` | List all authenticator providers | ✅ | ✅ |
+| `get_client_authenticator_providers` | GET | `/client-authenticator-providers` | List client authenticator providers | ✅ | ✅ |
+| `get_provider_config_description` | GET | `/config-description/{providerId}` | Get config schema for a specific provider | ✅ | ✅ |
+
+### Required Actions
+
+| Tool Name | Method | Endpoint | Purpose | Implemented | Tested |
+| --- | --- | --- | --- | --- | --- |
+| `get_required_actions` | GET | `/required-actions` | List all registered required actions | ✅ | ✅ |
+| `get_unregistered_required_actions` | GET | `/unregistered-required-actions` | List unregistered required action providers | ✅ | ✅ |
+| `register_required_action` | POST | `/register-required-action` | Register a new required action | ✅ | ✅ |
+| `get_required_action` | GET | `/required-actions/{alias}` | Get a specific required action by alias | ✅ | ✅ |
+| `update_required_action` | PUT | `/required-actions/{alias}` | Update required action settings | ✅ | ✅ |
+| `delete_required_action` | DELETE | `/required-actions/{alias}` | Delete a required action | ✅ | ⚠️ |
+| `raise_required_action_priority` | POST | `/required-actions/{alias}/raise-priority` | Raise required action priority | ✅ | ✅ |
+| `lower_required_action_priority` | POST | `/required-actions/{alias}/lower-priority` | Lower required action priority | ✅ | ✅ |
+| `get_required_action_config_description` | GET | `/required-actions/{alias}/config-description` | Get configuration schema for a required action | ✅ | ✅ |
+| `get_required_action_config` | GET | `/required-actions/{alias}/config` | Get current config for a required action | ✅ | ✅ |
+| `update_required_action_config` | PUT | `/required-actions/{alias}/config` | Update required action config | ✅ | ⚠️ |
+| `delete_required_action_config` | DELETE | `/required-actions/{alias}/config` | Clear required action config | ✅ | ⚠️ |
+
+**Notes:**
+- ⚠️ `delete_required_action` — test skips when all available actions are already registered (no unregistered actions to test with)
+- ⚠️ `update_required_action_config` / `delete_required_action_config` — test skips when no required action in the realm has a working config write endpoint (some Keycloak builds return 500 for `CONFIGURE_TOTP` config updates)
+
+### Form Providers
+
+| Tool Name | Method | Endpoint | Purpose | Implemented | Tested |
+| --- | --- | --- | --- | --- | --- |
+| `get_form_providers` | GET | `/form-providers` | List available form providers | ✅ | ✅ |
+| `get_form_action_providers` | GET | `/form-action-providers` | List available form action providers | ✅ | ✅ |
+
+### Per-Client Configuration
+
+| Tool Name | Method | Endpoint | Purpose | Implemented | Tested |
+| --- | --- | --- | --- | --- | --- |
+| `get_per_client_config_description` | GET | `/per-client-config-description` | Get config schema for per-client authentication | ✅ | ✅ |
 
 # References
 - [Keycloak Admin REST API Documentation](https://www.keycloak.org/docs-api/latest/rest-api/index.html)

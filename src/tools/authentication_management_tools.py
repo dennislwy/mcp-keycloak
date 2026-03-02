@@ -839,3 +839,176 @@ async def lower_required_action_priority(
         "POST", f"/authentication/required-actions/{alias}/lower-priority", realm=realm
     )
     return {"status": f"Required action '{alias}' priority lowered successfully"}
+
+
+@mcp.tool()
+async def delete_required_action(
+    alias: str,
+    realm: Optional[str] = None,
+) -> Dict[str, str]:
+    """
+    Delete a required action.
+
+    Args:
+        alias: The required action's alias
+        realm: Target realm (uses default if not specified)
+
+    Returns:
+        Status message
+    """
+    await client._make_request(
+        "DELETE", f"/authentication/required-actions/{alias}", realm=realm
+    )
+    return {"status": f"Required action '{alias}' deleted successfully"}
+
+
+@mcp.tool()
+async def get_required_action_config_description(
+    alias: str,
+    realm: Optional[str] = None,
+) -> Dict[str, Any]:
+    """
+    Get the configuration description schema for a required action provider.
+
+    Args:
+        alias: The required action's alias
+        realm: Target realm (uses default if not specified)
+
+    Returns:
+        Configuration description schema object
+    """
+    return await client._make_request(
+        "GET",
+        f"/authentication/required-actions/{alias}/config-description",
+        realm=realm,
+    )
+
+
+@mcp.tool()
+async def get_required_action_config(
+    alias: str,
+    realm: Optional[str] = None,
+) -> Dict[str, Any]:
+    """
+    Get the current configuration for a required action.
+
+    Args:
+        alias: The required action's alias
+        realm: Target realm (uses default if not specified)
+
+    Returns:
+        Required action configuration object
+    """
+    return await client._make_request(
+        "GET", f"/authentication/required-actions/{alias}/config", realm=realm
+    )
+
+
+@mcp.tool()
+async def update_required_action_config(
+    alias: str,
+    config: Dict[str, Any],
+    realm: Optional[str] = None,
+) -> Dict[str, str]:
+    """
+    Update the configuration for a required action.
+
+    Args:
+        alias: The required action's alias
+        config: Configuration key-value pairs
+        realm: Target realm (uses default if not specified)
+
+    Returns:
+        Status message
+    """
+    await client._make_request(
+        "PUT",
+        f"/authentication/required-actions/{alias}/config",
+        data=config,
+        realm=realm,
+    )
+    return {"status": f"Required action '{alias}' configuration updated successfully"}
+
+
+@mcp.tool()
+async def delete_required_action_config(
+    alias: str,
+    realm: Optional[str] = None,
+) -> Dict[str, str]:
+    """
+    Clear the configuration for a required action.
+
+    Args:
+        alias: The required action's alias
+        realm: Target realm (uses default if not specified)
+
+    Returns:
+        Status message
+    """
+    await client._make_request(
+        "DELETE", f"/authentication/required-actions/{alias}/config", realm=realm
+    )
+    return {"status": f"Required action '{alias}' configuration cleared successfully"}
+
+
+# Form Provider Tools
+
+
+@mcp.tool()
+async def get_form_providers(
+    realm: Optional[str] = None,
+) -> List[Dict[str, Any]]:
+    """
+    Get form providers available in the realm.
+
+    Args:
+        realm: Target realm (uses default if not specified)
+
+    Returns:
+        List of form provider objects
+    """
+    return await client._make_request(
+        "GET", "/authentication/form-providers", realm=realm
+    )
+
+
+@mcp.tool()
+async def get_form_action_providers(
+    realm: Optional[str] = None,
+) -> List[Dict[str, Any]]:
+    """
+    Get form action providers available in the realm.
+
+    Args:
+        realm: Target realm (uses default if not specified)
+
+    Returns:
+        List of form action provider objects
+    """
+    return await client._make_request(
+        "GET", "/authentication/form-action-providers", realm=realm
+    )
+
+
+# Per-Client Configuration Tools
+
+
+@mcp.tool()
+async def get_per_client_config_description(
+    realm: Optional[str] = None,
+) -> Dict[str, Any]:
+    """
+    Get configuration descriptions for all per-client authentication providers.
+
+    Returns the schema of configuration options available for per-client
+    authentication overrides.
+
+    Args:
+        realm: Target realm (uses default if not specified)
+
+    Returns:
+        Map of provider ID to configuration description
+    """
+    return await client._make_request(
+        "GET", "/authentication/per-client-config-description", realm=realm
+    )

@@ -170,22 +170,39 @@ Complete OAuth2/OpenID Connect protocol operations:
 - `get_openid_configuration` - Get OpenID Connect Discovery document with all endpoints and capabilities
 
 ### Authentication Management
-Complete authentication flow and execution control:
+Complete authentication flow and execution control, organized by sub-category:
+
+**Authentication Flows**
 - `list_authentication_flows` / `get_authentication_flow` - Flow listing and retrieval
 - `create_authentication_flow` / `update_authentication_flow` / `delete_authentication_flow` - Flow CRUD
 - `copy_authentication_flow` - Duplicate an existing flow as a starting point
+
+**Flow Executions**
 - `get_flow_executions` / `update_flow_executions` - Manage execution ordering and requirements within a flow
 - `add_execution_to_flow` / `add_subflow_to_flow` - Add executions or nested sub-flows
-- `get_execution` / `delete_execution` - Execution retrieval and removal
+- `create_execution` / `get_execution` / `delete_execution` - Standalone execution management
 - `raise_execution_priority` / `lower_execution_priority` - Reorder executions within a flow
-- `create_execution` - Create a standalone execution with full configuration
-- `get_authenticator_config` / `create_authenticator_config` / `update_authenticator_config` / `delete_authenticator_config` - Authenticator configuration CRUD
 - `get_execution_config` / `update_execution_config` - Execution-level configuration management
+
+**Authenticator Configuration**
+- `get_authenticator_config` / `create_authenticator_config` / `update_authenticator_config` / `delete_authenticator_config` - Authenticator configuration CRUD
+
+**Authenticator Providers**
 - `get_authenticator_providers` / `get_client_authenticator_providers` - List available authenticator providers
 - `get_provider_config_description` - Get configuration schema for a specific provider
-- `get_required_actions` / `get_required_action` / `update_required_action` - Required action management
+
+**Required Actions**
+- `get_required_actions` / `get_required_action` / `update_required_action` / `delete_required_action` - Full required action CRUD
 - `register_required_action` / `get_unregistered_required_actions` - Register new required action providers
 - `raise_required_action_priority` / `lower_required_action_priority` - Reorder required actions
+- `get_required_action_config_description` - Get configuration schema for a required action provider
+- `get_required_action_config` / `update_required_action_config` / `delete_required_action_config` - Required action configuration management
+
+**Form Providers**
+- `get_form_providers` / `get_form_action_providers` - List available form and form-action providers
+
+**Per-Client Configuration**
+- `get_per_client_config_description` - Get configuration schema for per-client authentication overrides
 
 ### Attack Detection
 Brute force protection and security monitoring:
@@ -379,7 +396,7 @@ Integrate Keycloak management into your CI/CD pipelines, allowing automated conf
 
 ## Testing
 
-The project includes a comprehensive test suite with 113 integration tests covering all tool categories including server information, OIDC protocol operations, client secret rotation, default and optional scope management, and fine-grained permissions. For detailed information, see [tests/README.md](tests/README.md).
+The project includes a comprehensive test suite with 130 integration tests covering all tool categories including server information, OIDC protocol operations, client secret rotation, default and optional scope management, fine-grained permissions, and authentication management. For detailed information, see [tests/README.md](tests/README.md).
 
 ### Running Tests
 
