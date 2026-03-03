@@ -2,15 +2,16 @@
 
 ## Implementation Status
 
-**Total Tools:** 59
-- ✅ **Implemented:** 59 (100%)
-- ⚠️ **Tested:** 58 (98%) — `exchange_token` pending tests
+**Total Tools:** 65
+- ✅ **Implemented:** 65 (100%)
+- ⚠️ **Tested:** 64 (98%) — `exchange_token` pending tests
 - 🔧 **Enhanced:** User and Group tools with advanced parameters
 
 **Test Coverage:** 130 integration tests across 13 test files (all passing)
 
 **Implementation Date:** 2025-02-14
-**Last Updated:** 2026-03-02
+**Last Updated:** 2026-03-03
+- Added 6 new Realm Administration tools (update_realm_settings expanded, update_realm_settings_advanced, events config CRUD, default group add/remove)
 - Added 8 missing Authentication Management tools (required action CRUD, required action config, form providers, per-client config)
 - Added OIDC Protocol tools (5 new tools: userinfo, revoke, logout, certs, discovery)
 - Documented exchange_token (RFC 8693 Token Exchange, already implemented)
@@ -183,6 +184,28 @@
 | ----------------- | ------ | -------------------------------------------------- | ----------- | ------ |
 | `list_subgroups`  | GET    | Get paginated list of subgroups for a parent group | ✅           | ✅      |
 | `create_subgroup` | POST   | Create a subgroup under a parent group             | ✅           | ✅      |
+
+## Realm Administration
+**Tool File:** `realm_tools.py`
+**Base URL Path:** `/admin/realms/{realm}`
+
+| Tool Name | Method | Endpoint | Purpose | Implemented | Tested |
+| --- | --- | --- | --- | --- | --- |
+| `get_accessible_realms` | GET | `/realms` | List all accessible realms | ✅ | ✅ |
+| `get_realm_info` | GET | `` (realm root) | Get current realm configuration | ✅ | ✅ |
+| `update_realm_settings` | PUT | `` (realm root) | Update realm settings (themes, login, brute-force, OTP policy, WebAuthn Passwordless policy, flow bindings) | ✅ | ✅ |
+| `update_realm_settings_advanced` | PUT | `` (realm root) | Power-user tool: shallow-merge a raw `RealmRepresentation` dict for full control | ✅ | ❌ |
+| `get_realm_events_config` | GET | `/events/config` | Get realm events configuration | ✅ | ❌ |
+| `update_realm_events_config` | PUT | `/events/config` | Update event listeners, admin events, enabled event types | ✅ | ❌ |
+| `get_realm_default_groups` | GET | `/default-groups` | List default groups assigned to new users | ✅ | ✅ |
+| `add_realm_default_group` | PUT | `/default-groups/{group_id}` | Add a group as a realm default group | ✅ | ❌ |
+| `remove_realm_default_group` | DELETE | `/default-groups/{group_id}` | Remove a group from realm default groups | ✅ | ❌ |
+| `remove_all_user_sessions` | POST | `/logout-all` | Invalidate all active user sessions in the realm | ✅ | ✅ |
+
+**Notes:**
+- `update_realm_settings` supports authentication flow bindings (`browserFlow`, `registrationFlow`, etc.), OTP policy, and full WebAuthn Passwordless policy configuration
+- `update_realm_settings_advanced` accepts any field from the [RealmRepresentation schema](https://www.keycloak.org/docs-api/latest/rest-api/index.html#RealmRepresentation) and merges it with the current config — use for fields not exposed by `update_realm_settings`
+- ❌ `update_realm_settings_advanced`, `get_realm_events_config`, `update_realm_events_config`, `add_realm_default_group`, `remove_realm_default_group` — not yet covered by integration tests
 
 ## Authentication Management
 **Tool File:** `authentication_management_tools.py`

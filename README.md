@@ -153,8 +153,9 @@ Hierarchical user organization with advanced search and hierarchy support:
 ### Realm Administration
 System-wide configuration:
 - `get_accessible_realms` - List of accessible realms
-- `get_realm_info` / `update_realm_settings` - Realm configuration
-- `get_realm_events_config` / `update_realm_events_config` - Event management
+- `get_realm_info` / `update_realm_settings` - Realm configuration (themes, login settings, brute-force, OTP policy, WebAuthn Passwordless policy, flow bindings)
+- `update_realm_settings_advanced` - Power-user tool accepting a raw `RealmRepresentation` dict for full control over any realm property
+- `get_realm_events_config` / `update_realm_events_config` - Event listeners, admin events, and enabled event types
 - `get_realm_default_groups` / `add_realm_default_group` / `remove_realm_default_group` - Default group settings
 - `remove_all_user_sessions` - Invalidate all active sessions in a realm
 
