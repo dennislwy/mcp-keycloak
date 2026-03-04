@@ -221,12 +221,13 @@ async def update_flow_executions(
     Returns:
         Status message
     """
-    await client._make_request(
-        "PUT",
-        f"/authentication/flows/{flow_alias}/executions",
-        data=executions,
-        realm=realm,
-    )
+    for execution in executions:
+        await client._make_request(
+            "PUT",
+            f"/authentication/flows/{flow_alias}/executions",
+            data=execution,
+            realm=realm,
+        )
     return {"status": "Flow executions updated successfully"}
 
 
