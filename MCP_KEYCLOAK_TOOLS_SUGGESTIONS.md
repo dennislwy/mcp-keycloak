@@ -4,10 +4,10 @@
 
 **Total Tools:** 68
 - ✅ **Implemented:** 68 (100%)
-- ⚠️ **Tested:** 64 (94%) — `exchange_token` + 3 user profile tools pending tests
+- ⚠️ **Tested:** 67 (99%) — `exchange_token` pending tests
 - 🔧 **Enhanced:** User and Group tools with advanced parameters
 
-**Test Coverage:** 130 integration tests across 13 test files (all passing)
+**Test Coverage:** 145 integration tests across 14 test files (all passing)
 
 **Implementation Date:** 2025-02-14
 **Last Updated:** 2026-03-06
@@ -30,9 +30,9 @@
 
 | Tool Name | Method | Endpoint | Purpose | Implemented | Tested |
 | --- | --- | --- | --- | --- | --- |
-| `get_user_profile` | GET | `/users/profile` | Get the full declarative user profile config (UPConfig) | ✅ | ❌ |
-| `update_user_profile` | PUT | `/users/profile` | Update user profile config; shallow-merges with current | ✅ | ❌ |
-| `get_user_profile_metadata` | GET | `/users/profile/metadata` | Get read-only profile metadata as seen by account consoles | ✅ | ❌ |
+| `get_user_profile` | GET | `/users/profile` | Get the full declarative user profile config (UPConfig) | ✅ | ✅ |
+| `update_user_profile` | PUT | `/users/profile` | Update user profile config; shallow-merges with current | ✅ | ✅ |
+| `get_user_profile_metadata` | GET | `/users/profile/metadata` | Get read-only profile metadata as seen by account consoles | ✅ | ✅ |
 
 **Notes:**
 - `UPConfig` contains: `unmanagedAttributePolicy` (`DISABLED` | `ENABLED` | `ADMIN_VIEW` | `ADMIN_EDIT`), `attributes` (list of attribute definitions with validators/permissions), `groups`

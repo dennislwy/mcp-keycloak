@@ -403,7 +403,7 @@ Integrate Keycloak management into your CI/CD pipelines, allowing automated conf
 
 ## Testing
 
-The project includes a comprehensive test suite with 130 integration tests covering all tool categories including server information, OIDC protocol operations, client secret rotation, default and optional scope management, fine-grained permissions, and authentication management. For detailed information, see [tests/README.md](tests/README.md).
+The project includes a comprehensive test suite with 145 integration tests covering all tool categories including server information, OIDC protocol operations, client secret rotation, default and optional scope management, fine-grained permissions, authentication management, and user profile management. For detailed information, see [tests/README.md](tests/README.md).
 
 ### Running Tests
 
