@@ -25,11 +25,9 @@ class KeycloakClient:
         return self._client
 
     async def _get_token(self) -> str:
-        """Get access token using username and password"""
-        # Use new URL structure (Keycloak 17+)
-        token_url = (
-            f"{self.server_url}/realms/{self.realm_name}/protocol/openid-connect/token"
-        )
+        """Get admin access token from realm 'master'"""
+        # token endpoint is always in master realm for admin operations
+        token_url = f"{self.server_url}/realms/master/protocol/openid-connect/token"
 
         data = {
             "grant_type": "password",
