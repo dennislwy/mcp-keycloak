@@ -23,8 +23,8 @@ async def test_user():
         enabled=True,
     )
 
-    # Get the user ID
-    users = await list_users(username=username, max=1)
+    # Get the user ID (realm uses registrationEmailAsUsername, so stored username = email)
+    users = await list_users(email="attack-test@example.com")
     user_id = users[0]["id"]
 
     yield user_id

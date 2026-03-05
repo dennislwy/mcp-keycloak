@@ -2,15 +2,16 @@
 
 ## Implementation Status
 
-**Total Tools:** 65
-- ✅ **Implemented:** 65 (100%)
-- ⚠️ **Tested:** 64 (98%) — `exchange_token` pending tests
+**Total Tools:** 68
+- ✅ **Implemented:** 68 (100%)
+- ⚠️ **Tested:** 64 (94%) — `exchange_token` + 3 user profile tools pending tests
 - 🔧 **Enhanced:** User and Group tools with advanced parameters
 
 **Test Coverage:** 130 integration tests across 13 test files (all passing)
 
 **Implementation Date:** 2025-02-14
-**Last Updated:** 2026-03-03
+**Last Updated:** 2026-03-06
+- Added 3 User Profile Management tools (get/update user profile UPConfig, get metadata)
 - Added 6 new Realm Administration tools (update_realm_settings expanded, update_realm_settings_advanced, events config CRUD, default group add/remove)
 - Added 8 missing Authentication Management tools (required action CRUD, required action config, form providers, per-client config)
 - Added OIDC Protocol tools (5 new tools: userinfo, revoke, logout, certs, discovery)
@@ -22,6 +23,21 @@
 - Enhanced Group tools with 4 new parameters + 2 new hierarchy operations
 
 ---
+
+## User Profile Management
+**Tool File:** `user_profile_tools.py`
+**Base URL Path:** `/admin/realms/{realm}/users/profile`
+
+| Tool Name | Method | Endpoint | Purpose | Implemented | Tested |
+| --- | --- | --- | --- | --- | --- |
+| `get_user_profile` | GET | `/users/profile` | Get the full declarative user profile config (UPConfig) | ✅ | ❌ |
+| `update_user_profile` | PUT | `/users/profile` | Update user profile config; shallow-merges with current | ✅ | ❌ |
+| `get_user_profile_metadata` | GET | `/users/profile/metadata` | Get read-only profile metadata as seen by account consoles | ✅ | ❌ |
+
+**Notes:**
+- `UPConfig` contains: `unmanagedAttributePolicy` (`DISABLED` | `ENABLED` | `ADMIN_VIEW` | `ADMIN_EDIT`), `attributes` (list of attribute definitions with validators/permissions), `groups`
+- `update_user_profile` GETs the current config and shallow-merges so callers only need to supply the top-level keys they want to change
+- `get_user_profile_metadata` returns the `UserProfileMetadata` view — attribute-level read-only/required flags as evaluated for the current caller context
 
 ## Client Management
 **Tool File:** `client_tools.py`

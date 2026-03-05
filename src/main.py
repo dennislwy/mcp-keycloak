@@ -30,6 +30,7 @@ from .tools import (
     oidc_protocol_tools,  # noqa: F401
     realm_tools,  # noqa: F401
     role_tools,  # noqa: F401
+    user_profile_tools,  # noqa: F401
     user_tools,  # noqa: F401
 )
 

@@ -89,6 +89,12 @@ Complete user lifecycle management with advanced search and filtering:
 - `count_users` - User statistics
 - Support for required actions (VERIFY_EMAIL, UPDATE_PASSWORD, CONFIGURE_TOTP, etc.)
 
+### User Profile Management
+Declarative user profile configuration (attributes, validators, permissions, groups):
+- `get_user_profile` - Get the full UPConfig (attributes, validators, permissions, groups, unmanaged attribute policy)
+- `update_user_profile` - Update the profile configuration; merges provided keys with current config so only changed fields need to be supplied
+- `get_user_profile_metadata` - Read-only metadata view of the profile as seen by account consoles and clients
+
 ### Client Management
 OAuth2/OIDC client configuration with comprehensive single-step creation, zero-downtime secret rotation, fine-grained permissions, and optional scope management:
 - `list_clients` - List clients with advanced filtering (client_id, q, search, pagination)

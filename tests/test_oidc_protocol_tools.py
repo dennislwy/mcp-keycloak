@@ -94,17 +94,23 @@ if PYTEST_AVAILABLE:
             email_verified=True,  # CRITICAL: Mark email as verified
         )
 
-        # Find user
-        users = await user_tools.list_users(search=username)
-        test_user = next((u for u in users if u["username"] == username), None)
+        # Find user by email (works regardless of registrationEmailAsUsername setting)
+        user_email = f"{username}@example.com"
+        users = await user_tools.list_users(email=user_email)
+        test_user = users[0] if users else None
         user_id = test_user["id"]
+
+        # Clear any default required actions (e.g. CONFIGURE_TOTP) that block login
+        from src.tools.user_tools import update_user
+        await update_user(user_id=user_id, required_actions=[])
 
         # Set password (non-temporary)
         await user_tools.reset_user_password(
             user_id=user_id, password=password, temporary=False
         )
 
-        yield {"id": user_id, "username": username, "password": password}
+        # Use actual stored username for login (handles both plain and email-as-username realms)
+        yield {"id": user_id, "username": test_user["username"], "password": password}
 
         # Cleanup
         try:

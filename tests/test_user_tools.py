@@ -71,16 +71,15 @@ class TestUserCRUD:
         )
         assert result["status"] == "created"
 
-        # Find user
-        users = await list_users(search=unique_username)
-        test_user = next((u for u in users if u["username"] == unique_username), None)
+        # Find user (realm uses registrationEmailAsUsername, so stored username = email)
+        users = await list_users(email=f"{unique_username}@example.com")
+        test_user = users[0] if users else None
         assert test_user is not None
         user_id = test_user["id"]
 
         try:
             # Get user by ID
             user = await get_user(user_id)
-            assert user["username"] == unique_username
             assert user["email"] == f"{unique_username}@example.com"
             assert user["firstName"] == "Test"
             assert user["lastName"] == "User"
@@ -90,8 +89,8 @@ class TestUserCRUD:
             assert delete_result["status"] == "deleted"
 
             # Verify deletion
-            users = await list_users(search=unique_username)
-            assert not any(u["username"] == unique_username for u in users)
+            users = await list_users(email=f"{unique_username}@example.com")
+            assert len(users) == 0
 
     async def test_update_user(self, unique_username):
         """Test updating user attributes."""
@@ -104,8 +103,8 @@ class TestUserCRUD:
             enabled=True,
         )
 
-        users = await list_users(search=unique_username)
-        test_user = next((u for u in users if u["username"] == unique_username), None)
+        users = await list_users(email=f"{unique_username}@example.com")
+        test_user = users[0] if users else None
         user_id = test_user["id"]
 
         try:
@@ -138,13 +137,12 @@ class TestUserCRUD:
         )
         assert result["status"] == "created"
 
-        users = await list_users(search=unique_username)
-        test_user = next((u for u in users if u["username"] == unique_username), None)
+        users = await list_users(email=f"{unique_username}@example.com")
+        test_user = users[0] if users else None
         user_id = test_user["id"]
 
         try:
             user = await get_user(user_id)
-            assert user["username"] == unique_username
             assert user["enabled"] is True
         finally:
             await delete_user(user_id)
@@ -170,14 +168,14 @@ class TestUserSearch:
             enabled=True,
         )
 
-        users = await list_users(search=unique_username)
-        test_user = next((u for u in users if u["username"] == unique_username), None)
+        users = await list_users(email=f"{unique_username}@example.com")
+        test_user = users[0] if users else None
         user_id = test_user["id"]
 
         try:
             # Search should find our user
             assert test_user is not None
-            assert test_user["username"] == unique_username
+            assert test_user["email"] == f"{unique_username}@example.com"
         finally:
             await delete_user(user_id)
 
@@ -189,7 +187,6 @@ class TestUserSearch:
 
     async def test_exact_match_search(self):
         """Test exact matching for user searches."""
-        # Create test users
         user1 = "exacttest"
         user2 = "exacttest123"
 
@@ -206,10 +203,10 @@ class TestUserSearch:
             assert len(exact_users) == 1
             assert exact_users[0]["username"] == user1
         finally:
-            # Cleanup
-            all_users = await list_users(search="exacttest")
-            for user in all_users:
-                if user["username"] in [user1, user2]:
+            # Cleanup by email
+            for email in [f"{user1}@test.com", f"{user2}@test.com"]:
+                found = await list_users(email=email)
+                for user in found:
                     await delete_user(user["id"])
 
     async def test_name_filters(self):
@@ -222,22 +219,23 @@ class TestUserSearch:
             email=f"{username}@test.com",
         )
 
+        user_email = f"{username}@test.com"
         try:
-            # Search by first name
+            # Search by first name (stored username is the email with registrationEmailAsUsername=True)
             users = await list_users(first_name="TestFirst")
-            found = any(u["username"] == username for u in users)
+            found = any(u["email"] == user_email for u in users)
             assert found, "User not found by first name"
 
             # Search by last name
             users = await list_users(last_name="TestLast")
-            found = any(u["username"] == username for u in users)
+            found = any(u["email"] == user_email for u in users)
             assert found, "User not found by last name"
 
             # Search with exact match on names
             users = await list_users(
                 first_name="TestFirst", last_name="TestLast", exact=True
             )
-            found = any(u["username"] == username for u in users)
+            found = any(u["email"] == user_email for u in users)
             assert found, "User not found with exact name match"
         finally:
             # Cleanup
@@ -262,7 +260,7 @@ class TestUserSearch:
         )
 
         try:
-            # Search for verified emails
+            # Search for verified emails (stored username = email with registrationEmailAsUsername=True)
             verified_users = await list_users(email_verified=True)
             verified_usernames = [u["username"] for u in verified_users]
 
@@ -476,8 +474,8 @@ class TestUserPasswordManagement:
             enabled=True,
         )
 
-        users = await list_users(search=unique_username)
-        test_user = next((u for u in users if u["username"] == unique_username), None)
+        users = await list_users(email=f"{unique_username}@example.com")
+        test_user = users[0] if users else None
         user_id = test_user["id"]
 
         try:
@@ -507,8 +505,8 @@ class TestUserSessions:
             enabled=True,
         )
 
-        users = await list_users(search=unique_username)
-        test_user = next((u for u in users if u["username"] == unique_username), None)
+        users = await list_users(email=f"{unique_username}@example.com")
+        test_user = users[0] if users else None
         user_id = test_user["id"]
 
         try:
@@ -529,8 +527,8 @@ class TestUserSessions:
             enabled=True,
         )
 
-        users = await list_users(search=unique_username)
-        test_user = next((u for u in users if u["username"] == unique_username), None)
+        users = await list_users(email=f"{unique_username}@example.com")
+        test_user = users[0] if users else None
         user_id = test_user["id"]
 
         try:
