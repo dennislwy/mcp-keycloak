@@ -111,6 +111,15 @@ OAuth2/OIDC client configuration with comprehensive single-step creation, zero-d
 - `get_client_management_permissions` / `update_client_management_permissions` - Fine-grained authorization control
 - Support for consent, full scope control, custom attributes, authentication types, zero-downtime secret rotation, and delegated management
 
+### Client Scope Evaluation
+Simulate and inspect tokens/scopes before they are issued — useful for debugging scope configurations, verifying claim mappings, and checking role grants:
+- `generate_example_access_token` - Simulate the access token Keycloak would issue for a user/client/scope combination
+- `generate_example_id_token` - Simulate the ID token for a user/client/scope combination
+- `generate_example_userinfo` - Simulate the /userinfo response for a user/client/scope combination
+- `get_client_evaluate_scopes_protocol_mappers` - List all effective protocol mappers for a given scope parameter
+- `get_client_evaluate_scopes_granted_roles` - List roles from a container that ARE granted for the scope
+- `get_client_evaluate_scopes_not_granted_roles` - List roles from a container that are NOT granted for the scope
+
 ### Client Protocol Mappers
 Protocol mapper management for clients:
 - `list_client_protocol_mappers` / `get_client_protocol_mapper` - List and retrieve mappers
