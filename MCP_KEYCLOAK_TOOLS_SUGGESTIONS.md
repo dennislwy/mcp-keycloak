@@ -4,10 +4,10 @@
 
 **Total Tools:** 74
 - ✅ **Implemented:** 74 (100%)
-- ⚠️ **Tested:** 67 (91%) — `exchange_token` + 6 client evaluate-scopes tools pending tests
+- ⚠️ **Tested:** 73 (99%) — `exchange_token` pending tests
 - 🔧 **Enhanced:** User and Group tools with advanced parameters
 
-**Test Coverage:** 145 integration tests across 14 test files (all passing)
+**Test Coverage:** 170 integration tests across 15 test files (all passing)
 
 **Implementation Date:** 2025-02-14
 **Last Updated:** 2026-03-06
@@ -45,12 +45,12 @@
 
 | Tool Name | Method | Endpoint | Purpose | Implemented | Tested |
 | --- | --- | --- | --- | --- | --- |
-| `generate_example_access_token` | GET | `/evaluate-scopes/generate-example-access-token` | Simulate the access token Keycloak would issue for a user/client/scope | ✅ | ❌ |
-| `generate_example_id_token` | GET | `/evaluate-scopes/generate-example-id-token` | Simulate the ID token for a user/client/scope combination | ✅ | ❌ |
-| `generate_example_userinfo` | GET | `/evaluate-scopes/generate-example-userinfo` | Simulate the /userinfo response for a user/client/scope | ✅ | ❌ |
-| `get_client_evaluate_scopes_protocol_mappers` | GET | `/evaluate-scopes/protocol-mappers` | List all effective protocol mappers for a given scope value | ✅ | ❌ |
-| `get_client_evaluate_scopes_granted_roles` | GET | `/evaluate-scopes/scope-mappings/{roleContainerId}/granted` | List roles from a container that ARE granted for the scope | ✅ | ❌ |
-| `get_client_evaluate_scopes_not_granted_roles` | GET | `/evaluate-scopes/scope-mappings/{roleContainerId}/not-granted` | List roles from a container that are NOT granted for the scope | ✅ | ❌ |
+| `generate_example_access_token` | GET | `/evaluate-scopes/generate-example-access-token` | Simulate the access token Keycloak would issue for a user/client/scope | ✅ | ✅ |
+| `generate_example_id_token` | GET | `/evaluate-scopes/generate-example-id-token` | Simulate the ID token for a user/client/scope combination | ✅ | ✅ |
+| `generate_example_userinfo` | GET | `/evaluate-scopes/generate-example-userinfo` | Simulate the /userinfo response for a user/client/scope | ✅ | ✅ |
+| `get_client_evaluate_scopes_protocol_mappers` | GET | `/evaluate-scopes/protocol-mappers` | List all effective protocol mappers for a given scope value | ✅ | ✅ |
+| `get_client_evaluate_scopes_granted_roles` | GET | `/evaluate-scopes/scope-mappings/{roleContainerId}/granted` | List roles from a container that ARE granted for the scope | ✅ | ✅ |
+| `get_client_evaluate_scopes_not_granted_roles` | GET | `/evaluate-scopes/scope-mappings/{roleContainerId}/not-granted` | List roles from a container that are NOT granted for the scope | ✅ | ✅ |
 
 **Notes:**
 - `client_id` is the internal Keycloak UUID, not the `clientId` string — use `list_clients` to find it

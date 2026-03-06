@@ -194,14 +194,20 @@ class TestUserSearch:
         await create_user(username=user2, email=f"{user2}@test.com")
 
         try:
-            # Search without exact match (should find both)
-            users = await list_users(username="exacttest")
+            # Look up actual stored usernames (may be emails if registrationEmailAsUsername=True)
+            found1 = await list_users(email=f"{user1}@test.com")
+            found2 = await list_users(email=f"{user2}@test.com")
+            assert found1 and found2, "Test users were not created"
+            actual_user1 = found1[0]["username"]
+
+            # Non-exact search for "exacttest" finds both (prefix of both stored usernames)
+            users = await list_users(username=user1)
             assert len(users) >= 2
 
-            # Search with exact match (should find only one)
-            exact_users = await list_users(username="exacttest", exact=True)
+            # Exact search on the actual stored username should find exactly one
+            exact_users = await list_users(username=actual_user1, exact=True)
             assert len(exact_users) == 1
-            assert exact_users[0]["username"] == user1
+            assert exact_users[0]["username"] == actual_user1
         finally:
             # Cleanup by email
             for email in [f"{user1}@test.com", f"{user2}@test.com"]:
@@ -260,23 +266,23 @@ class TestUserSearch:
         )
 
         try:
-            # Search for verified emails (stored username = email with registrationEmailAsUsername=True)
+            # Search for verified emails
             verified_users = await list_users(email_verified=True)
-            verified_usernames = [u["username"] for u in verified_users]
+            verified_emails = [u.get("email") for u in verified_users]
 
             # Search for unverified emails
             unverified_users = await list_users(email_verified=False)
-            unverified_usernames = [u["username"] for u in unverified_users]
+            unverified_emails = [u.get("email") for u in unverified_users]
 
-            # Check if our test users are in the correct lists
+            # Check by email (works regardless of username storage format)
             assert (
-                username_verified in verified_usernames
-                or username_unverified in unverified_usernames
+                f"{username_verified}@test.com" in verified_emails
+                or f"{username_unverified}@test.com" in unverified_emails
             )
         finally:
-            # Cleanup
+            # Cleanup by email (works regardless of username storage format)
             for username in [username_verified, username_unverified]:
-                users = await list_users(username=username)
+                users = await list_users(email=f"{username}@test.com")
                 if users:
                     await delete_user(users[0]["id"])
 

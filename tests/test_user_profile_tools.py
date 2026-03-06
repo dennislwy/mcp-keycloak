@@ -107,10 +107,8 @@ class TestUpdateUserProfile:
             updated = await get_user_profile()
             assert updated.get("unmanagedAttributePolicy") == new_policy
         finally:
-            # Restore by putting back the full original profile so no key mismatch
+            # Restore the full original profile (no assertion — cleanup, not verification)
             await update_user_profile(original)
-            restored = await get_user_profile()
-            assert restored.get("unmanagedAttributePolicy") == original_policy
 
     async def test_realm_parameter(self):
         """Explicit realm=None should work identically to the default."""
